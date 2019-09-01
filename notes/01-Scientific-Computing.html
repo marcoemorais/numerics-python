@@ -13479,6 +13479,14 @@ $</p>
 </div>
 </div>
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Compute the number-of-numbers for a given representation.</p>
+
+</div>
+</div>
+</div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[1]:</div>
@@ -13489,6 +13497,14 @@ $</p>
 <span class="sd">    Return the number of numbers in the given floating point system.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">beta</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">beta</span><span class="o">**</span><span class="p">(</span><span class="n">p</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">U</span><span class="o">-</span><span class="n">L</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+
+
+<span class="n">ieee_half_precision</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;beta&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s1">&#39;p&#39;</span><span class="p">:</span> <span class="mi">11</span><span class="p">,</span>
+    <span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">14</span><span class="p">,</span>
+    <span class="s1">&#39;U&#39;</span><span class="p">:</span> <span class="mi">15</span>
+<span class="p">}</span>
 
 <span class="n">ieee_single_precision</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;beta&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
@@ -13504,6 +13520,7 @@ $</p>
     <span class="s1">&#39;U&#39;</span><span class="p">:</span> <span class="mi">1023</span><span class="p">,</span>
 <span class="p">}</span>
 
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:,}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">number_of_numbers</span><span class="p">(</span><span class="o">**</span><span class="n">ieee_half_precision</span><span class="p">)))</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:,}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">number_of_numbers</span><span class="p">(</span><span class="o">**</span><span class="n">ieee_single_precision</span><span class="p">)))</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:,}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">number_of_numbers</span><span class="p">(</span><span class="o">**</span><span class="n">ieee_double_precision</span><span class="p">)))</span>
 </pre></div>
@@ -13522,7 +13539,8 @@ $</p>
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>4,261,412,865
+<pre>61,441
+4,261,412,865
 18,428,729,675,200,069,633
 </pre>
 </div>
@@ -13989,7 +14007,7 @@ $</p>
 (b) When is an approximate solution to a given problem considered to be good according to back- ward error analysis?</p>
 </blockquote>
 <p>(a) Backward error = approximate input - true input</p>
-<p>(b) We cannot expect the error in our output to be smaller than error in the input, thus backward error gives us a good lower bound on forward error.</p>
+<p>(b) An approximate solution is good when it is an exact solution to a problem having a small backward error (referred to as "nearby").</p>
 
 </div>
 </div>

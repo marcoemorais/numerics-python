@@ -13097,7 +13097,17 @@ Ax = \lambda x
 $$</p>
 <ul>
 <li>Note: $\lambda$ might be complex, even when $A$ is real</li>
+<li>$x$ is sometimes referred to as the <em>right eigenvector</em></li>
 <li>Interpretation: Eigenvalues and eigenvectors decompose complex linear behavior into simpler actions.</li>
+</ul>
+<p>Alternatively we have left eigenvector
+$$
+y^T A = \lambda y^T
+$$
+where</p>
+<ul>
+<li>$y$ is the left eigenvector</li>
+<li>Theoretically interesting, but not important for computation</li>
 </ul>
 <p><strong>Spectrum</strong> $\lambda(A)$ is set of all eigenvalues of $A$</p>
 <p><strong>Spectral Radius</strong> $\rho(A)$ is maximum absolute value eigenvalue</p>
@@ -13115,7 +13125,7 @@ $$</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -13214,7 +13224,11 @@ where</p>
 <li>$D$ is a diagonal matrix with $\lambda_1 \cdots \lambda_n$ along diagonal</li>
 <li>$X$ is a matrix formed from the set of linearly independent eigenvectors $x_1 \cdots x_n$</li>
 </ul>
-<h4 id="Uniqueness">Uniqueness<a class="anchor-link" href="#Uniqueness">&#182;</a></h4><p>Eigenvectors are not unique since they can be scaled arbitrarily.  As a result, eigenvectors are typically normalized to unit vector.</p>
+<h4 id="Uniqueness">Uniqueness<a class="anchor-link" href="#Uniqueness">&#182;</a></h4><p>Eigenvectors are not unique since they can be scaled arbitrarily.</p>
+<ul>
+<li>Eigenvectors are typically normalized to unit vector.</li>
+<li>They can be scaled arbitrarily (eg multiplied by 1 or -1) to flip sign of components.</li>
+</ul>
 <p>Eigenspace, $S_{\lambda}$, is the set of all eigenvectors such that $Ax = \lambda x$.</p>
 <ul>
 <li>$S_{\lambda}$ is a subspace of $\mathbb{R}^n$ or $\mathbb{C}^n$</li>
@@ -13235,12 +13249,18 @@ where</p>
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Properties Relevant to eigenvalue problems</p>
 <ul>
-<li>diagonal</li>
+<li>diagonal<ul>
+<li>eigenvalues are diagonal entries</li>
+</ul>
+</li>
+<li>triangular<ul>
+<li>eigenvalues are diagonal entries</li>
+</ul>
+</li>
 <li>tridiagonal<ul>
 <li>elements above the first superdiagonal and below the first subdiagonal are 0</li>
 </ul>
 </li>
-<li>triangular</li>
 <li>Hessenberg<ul>
 <li>like a triangular matrix, except either first superdiagonal or first subdiagonal are also nonzero</li>
 </ul>
@@ -13302,7 +13322,7 @@ where</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -13365,14 +13385,18 @@ cond(v):  1288.943965937134
 <li>Shift<ul>
 <li>If $Ax = \lambda x$ and $\sigma$ is a scalar, then $(A - \sigma I) x = (\lambda - \sigma) x$.</li>
 <li>Eigenvalues of shifted matrix are shifted eigenvalues of original matrix.</li>
+<li>Eigenvectors are unchanged.</li>
 </ul>
 </li>
 <li>Inversion<ul>
 <li>If $A$ is nonsingular and $Ax = \lambda x$ with $x \neq 0$, then $A^{-1}x = \frac{1}{\lambda}x$.</li>
+<li>Eigenvectors are unchanged.</li>
 </ul>
 </li>
 <li>Powers<ul>
 <li>If $Ax = \lambda x$, then $A^k x = \lambda^k x$</li>
+<li>Raising a matrix to a power $k$ also raises eigenvalues to power $k$.</li>
+<li>Eigenvectors are unchanged.</li>
 </ul>
 </li>
 <li>Polynomial<ul>
@@ -13480,7 +13504,7 @@ cond(v):  1288.943965937134
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -13497,6 +13521,7 @@ cond(v):  1288.943965937134
         <span class="n">x_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">x_k</span><span class="p">)</span>
         <span class="n">x_k</span> <span class="o">=</span> <span class="n">x_k</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x_k</span><span class="p">)</span>
 
+        <span class="c1"># Use lambda as the termination condition.</span>
         <span class="n">lambda_prev</span> <span class="o">=</span> <span class="n">lambda_k</span>
         <span class="n">lambda_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x_k</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">x_k</span><span class="p">))</span>
 
@@ -13565,7 +13590,7 @@ $$</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -13578,7 +13603,7 @@ $$</p>
     <span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">x_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="n">n</span><span class="p">,))</span>  <span class="c1"># Any nonzero vector.</span>
     <span class="n">lambda_k</span><span class="p">,</span> <span class="n">lambda_prev</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span> 
-    
+
     <span class="c1"># Factorize A into [L|U].</span>
     <span class="c1"># NOTE(mmorais): Use P^T to reorder the right-hand side.</span>
     <span class="n">P</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">U</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">lu</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
@@ -13591,6 +13616,7 @@ $$</p>
         <span class="n">y_k</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">solve_triangular</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">x_k</span> <span class="o">=</span> <span class="n">y_k</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">y_k</span><span class="p">)</span>
 
+        <span class="c1"># Use lambda as the termination condition.</span>
         <span class="n">lambda_prev</span> <span class="o">=</span> <span class="n">lambda_k</span>
         <span class="n">lambda_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x_k</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">x_k</span><span class="p">))</span>
 
@@ -13608,7 +13634,10 @@ $$</p>
 <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">w_min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">w</span><span class="p">)),)</span>
 
 <span class="c1"># Compare the smallest eigenvector to numpy.</span>
-<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">v_min</span><span class="p">,</span> <span class="n">v</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">w</span><span class="p">)])</span>
+<span class="c1"># NOTE(mmorais): Use absolute value of components of eigenvector.</span>
+<span class="c1"># Since eigenvectors are not unique, they can be scaled arbitrarily</span>
+<span class="c1"># (eg multiplied by 1 or -1).</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">v_min</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">v</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">w</span><span class="p">)]))</span>
 </pre></div>
 
     </div>
@@ -13626,6 +13655,26 @@ $$</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>Power iteration and inverse iteration can be used to find the maximum and minimum eigenvalues respectively, but another technique is needed to find all the eigenvalues of a matrix.</p>
+<p><strong>Deflation</strong> is the process of removing known eigenvalues in order to compute the remaining eigenvalues of a matrix.</p>
+<p>Let $H$ be a nonsingular matrix such that $H x_1 = \alpha e_1$ where $x_1$ is the first eigenvector of the matrix and $e_1$ is the elementary row matrix.  Then similarity transformation below can be used to transform the $n \times n$ matrix $A$ to the $n-1 \times n-1$ matrix $B$ having eigenvalues $\lambda_2, \cdots, \lambda_n$.
+$$
+H A H^{-1} = 
+\begin{bmatrix}
+\lambda_1 &amp; b^T \\
+0 &amp; B
+\end{bmatrix}
+$$</p>
+<p>After finding the eigenvalue $\lambda_2$ and eigenvector $y_2$ of $B$, then the following can be used to obtain the eigenvector $x_2$ of the original matrix $A$.
+$$
+x_2 = H^{-1}
+\begin{bmatrix}
+\alpha \\
+y_2
+\end{bmatrix},
+\qquad
+\alpha = \frac{b^T y_2}{\lambda_2 - \lambda_1}
+$$</p>
 
 </div>
 </div>
@@ -13640,6 +13689,75 @@ $$</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Simultaneous-Iteration">Simultaneous Iteration<a class="anchor-link" href="#Simultaneous-Iteration">&#182;</a></h4><p>Rather than finding eigenvalue and eigenvector pairs one-by-one, the technique of simultaneous iteration finds all pairs starting from a <strong>matrix</strong> of initial vectors.
+$$
+X_k = A X_{k-1}
+$$
+where</p>
+<ul>
+<li>$X_k$ is a matrix of eigenvectors, initialized with random values</li>
+</ul>
+<h4 id="Orthogonal-Iteration">Orthogonal Iteration<a class="anchor-link" href="#Orthogonal-Iteration">&#182;</a></h4><p>Similar to power iteration, normalization is required.  Use the QR factorization of $X_{k-1}$ at each step of the iteration.
+$$
+\hat{Q}_k R_k = X_{k-1} \\
+X_k = A \hat{Q}_k
+$$</p>
+<p>Why normalize?</p>
+<ol>
+<li>Avoid overflow and underflow.</li>
+<li>Columns of $X_k$ increasingly ill-conditioned, orthonormalization helps improve conditioning. </li>
+</ol>
+<h4 id="QR-Iteration">QR Iteration<a class="anchor-link" href="#QR-Iteration">&#182;</a></h4><p>Rather than explicitly computing the eigenvectors, use QR factorization to make $A_k$ converge to triangular form from which the eigenvalues can be extracted from the diagonals of $A_k$.</p>
+<ol>
+<li>Initialize $A_0$ to $A$.</li>
+<li>Compute QR factorization $Q_k R_k$ of $A_{k-1}$.</li>
+<li>Update $A_k = R_k Q_k$</li>
+<li>Repeat starting from step 2.</li>
+</ol>
+<p>The eigenvectors of $A$ are obtained from product of $Q_k$ matrices generated during iteration.</p>
+<h4 id="QR-Iteration-With-Shifts">QR Iteration With Shifts<a class="anchor-link" href="#QR-Iteration-With-Shifts">&#182;</a></h4><p>Shift the matrix $A_{k-1}$ by $\sigma_k$ prior to computing the QR factorization.</p>
+<ol>
+<li>Initialize $A_0$ to $A$.</li>
+<li>Compute QR factorization $Q_k R_k$ of $A_{k-1} - \sigma_k I$.</li>
+<li>Update $A_k = R_k Q_k + \sigma_k I$</li>
+<li>Repeat starting from step 2.</li>
+</ol>
+<p>The choice of shift $\sigma_k$ need only approximate an eigenvalue.</p>
+<ul>
+<li>The lower right corner of $A_k$ is a good approximation. </li>
+</ul>
+<p><strong>Initial Reduction</strong> Transform $A$ to Hessenberg matrix prior to QR iteration using orthogonal similarity transformation such as Householder transformation.</p>
+<ul>
+<li>Since Hessenberg is nearly triangular, work per QR iteration is reduced and fewer iterations are required since matrix is already nearly triangular.</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Cost-of-QR-Iteration">Cost of QR Iteration<a class="anchor-link" href="#Cost-of-QR-Iteration">&#182;</a></h4><table>
+<thead><tr>
+<th>Matrix</th>
+<th>Eigenvalues Only</th>
+<th>Eigenvalues &amp; Eigenvectors</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Symmetric</td>
+<td>$\frac{4}{3} n^3$</td>
+<td>$9 n^3$</td>
+</tr>
+<tr>
+<td>General</td>
+<td>$10 n^3$</td>
+<td>$25 n^3$</td>
+</tr>
+</tbody>
+</table>
+<p>Interpretation: Cost of obtaining eigenvectors by accumulating orthogonal transformations is high.</p>
 
 </div>
 </div>
@@ -13654,6 +13772,15 @@ $$</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>Unlike simultaneous methods such as QR iteration, Krylov methods build up the subspace incrementally.</p>
+<ul>
+<li>Requires only matrix-vector multiplication.</li>
+<li>Useful for large sparse matrices.</li>
+</ul>
+<p><strong>Arnoldi iteration</strong> recurrence used to produce unitary matrix $Q_k$ and upper Hessenberg matrix $H_k$ column-by-column using only matrix-vector multiplication.</p>
+<ul>
+<li>The matrix $H_k$ only provides an approximation to eigenvalues and eigenvectors of $A$.</li>
+</ul>
 
 </div>
 </div>
@@ -13668,6 +13795,19 @@ $$</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>Jacobi method used to compute eigenvalues of real symmetric matrix.
+$$
+A_{k+1} = J_k^T A_k J_k
+$$
+where</p>
+<ul>
+<li>$J_k$ is a plane rotation used to annihilate pairs of symmetric entries in $A_k$</li>
+</ul>
+<p>Eventually $A$ convergences to diagonal form.</p>
+<ul>
+<li>Eigenvalues are diagonal entries.</li>
+<li>Eigenvectors obtained from the product of plane rotations.</li>
+</ul>
 
 </div>
 </div>
@@ -13682,6 +13822,14 @@ $$</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p><strong>Bispectrum</strong> or <strong>Spectrum Slicing</strong> used to determine how many eigenvalues are less than $\sigma$.</p>
+<ul>
+<li>By systemmatically choosing values of $\sigma$ any eigenvalue can be isolated using bisection technique.</li>
+</ul>
+<p><strong>Divide and Conquer</strong> used to find eigenvalues and eigenvectors of symmetric tridiagonal matrices.</p>
+<ul>
+<li>Recursive algorithm which expresses the original matrix as sum of two matrices.</li>
+</ul>
 
 </div>
 </div>
@@ -13696,9 +13844,56 @@ $$</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Generalized-Eigenvalue-Problem">Generalized Eigenvalue Problem<a class="anchor-link" href="#Generalized-Eigenvalue-Problem">&#182;</a></h4><p>Given $A$ and $B$ which are $n \times n$ matrices
+$$
+A x = \lambda B x
+$$</p>
+<h4 id="QZ">QZ<a class="anchor-link" href="#QZ">&#182;</a></h4><h4 id="SVD">SVD<a class="anchor-link" href="#SVD">&#182;</a></h4>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Summary:-Eigenvalue-Problems">Summary: Eigenvalue Problems<a class="anchor-link" href="#Summary:-Eigenvalue-Problems">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li>Algorithms for computing eigenvalues and eigenvectors are iterative.</li>
+<li>Power and inverse iteration find one eigenvalue-eigenvector pair.</li>
+<li>QR iteration simultaneously finds all eigenvalue and eigenvectors by transforming matrix to triangular form using orthogonal similarity.<ul>
+<li>An initial reduction of the matrix to Hessenberg form is often used in practice in order to improve efficiency.</li>
+</ul>
+</li>
+<li>Krylov methods are used for large sparse matrices.</li>
+<li>More specialized methods exist for symmetric matrices.<ul>
+<li>Jacobi</li>
+<li>Spectrum Slicing</li>
+<li>Divide and Conquer</li>
+</ul>
+</li>
+<li>SVD can be computed by a variant of QR iteration.</li>
+</ul>
 
 </div>
 </div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
 </div>
     </div>
   </div>

@@ -13115,7 +13115,7 @@ $$</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[27]:</div>
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -13302,7 +13302,7 @@ where</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[51]:</div>
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -13453,9 +13453,74 @@ cond(v):  1288.943965937134
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>Compute the dominant eigenvalue $\lambda_k$ and eigenvector $x_k$ of the $n \times n$ matrix $A$.</p>
+<ol>
+<li>Start with some nonzero vector $x_0$.</li>
+<li>Compute $x_k = A x_{k-1}$ and $\lambda_k = x_k^T \cdot A x_k$.<ul>
+<li>To avoid overflow (or underflow if $\lambda_k \lt 1$), consider normalizing $x_k$ after each iteration.</li>
+</ul>
+</li>
+<li>Repeat the previous step until $| \lambda_k - \lambda_{k-1} | \lt \epsilon$.</li>
+</ol>
+<p>After convergence, the value $\lambda_k$ is the dominant eigenvalue with  eigenvector $x_k$.</p>
+<ul>
+<li>The dominant eigenvalue is eigenvalue having maximum absolute value.</li>
+</ul>
 
 </div>
 </div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Find the dominant eigenvalue and eigenvector of the $n \times n$ matrix $A$ using power iteration.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="k">def</span> <span class="nf">power_iteration</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Use power iteration to compute the dominant eigenvalue of A.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">x_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="n">n</span><span class="p">,))</span>  <span class="c1"># Any nonzero vector.</span>
+    <span class="n">lambda_k</span><span class="p">,</span> <span class="n">lambda_prev</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span> 
+
+    <span class="k">while</span> <span class="nb">abs</span><span class="p">(</span><span class="n">lambda_k</span> <span class="o">-</span> <span class="n">lambda_prev</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">:</span>
+        <span class="n">x_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">x_k</span><span class="p">)</span>
+        <span class="n">x_k</span> <span class="o">=</span> <span class="n">x_k</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x_k</span><span class="p">)</span>
+
+        <span class="n">lambda_prev</span> <span class="o">=</span> <span class="n">lambda_k</span>
+        <span class="n">lambda_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x_k</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">x_k</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">lambda_k</span><span class="p">,</span> <span class="n">x_k</span>
+
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Compute the dominant eigenvalue and corresponding eigenvector.</span>
+<span class="n">w_max</span><span class="p">,</span> <span class="n">v_max</span> <span class="o">=</span> <span class="n">power_iteration</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+
+<span class="c1"># Compute the eigenvalues and right eigenvector using numpy.</span>
+<span class="n">w</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+
+<span class="c1"># Compare the dominant eigenvalue to numpy.</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">w_max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">w</span><span class="p">)),)</span>
+
+<span class="c1"># Compare the dominant eigenvector to numpy.</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">v_max</span><span class="p">,</span> <span class="n">v</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">w</span><span class="p">)])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
@@ -13467,9 +13532,89 @@ cond(v):  1288.943965937134
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>To compute the smallest eigenvalue of matrix $A$, make use of eigenvalues of $A^{-1}$ are reciprocals of $A$.  As a result, smallest eigenvalue of $A$ is the reciprocal of largest eigenvalue of $A^{-1}$.</p>
+<ul>
+<li>In practice, we factorize $A$ and solve for $x_k$ rather than explicitly computing $A^{-1}$.</li>
+</ul>
+<h4 id="Inverse-Iteration">Inverse Iteration<a class="anchor-link" href="#Inverse-Iteration">&#182;</a></h4><p>Compute the smallest eigenvalue $\lambda_k$ and eigenvector $x_k$ of the $n \times n$ matrix $A$.</p>
+<ol>
+<li>Start with some nonzero vector $x_0$.</li>
+<li>Solve $A y_k = x_{k-1}$ for $y_k$.</li>
+<li>Compute $x_k = y_k / ||y_k||_{\inf}$ and $\lambda_k = x_k^T \cdot A x_k$.</li>
+<li>Repeat the previous step until $| \lambda_k - \lambda_{k-1} | \lt \epsilon$.</li>
+</ol>
+<h4 id="Rayleigh-Quotient">Rayleigh Quotient<a class="anchor-link" href="#Rayleigh-Quotient">&#182;</a></h4><p>Given an approximate eigenvector $x$ for real matrix $A$ find best estimate for eigenvalue $\lambda$ by solving $x \lambda \approxeq A x$ for $\lambda$ using <strong>Rayleigh Quotient</strong>:
+$$
+\lambda = \frac{x^T A x}{x^T x}
+$$</p>
+<p>The Rayleigh Quotient can be be combined with the inverse iteration method by solving the shifted matrix $(A - \lambda_k I) y_k = x_{k-1}$ for $y_k$.</p>
+<ul>
+<li>Since the shifted matrix changes with each iteration, the factorization must be repeated each time.</li>
+</ul>
 
 </div>
 </div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Find the smallest eigenvalue and eigenvector of the $n \times n$ matrix $A$ using inverse iteration.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.linalg</span> <span class="k">as</span> <span class="nn">la</span>
+
+<span class="k">def</span> <span class="nf">inverse_iteration</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Use inverse iteration to compute the smallest eigenvalue of A.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">x_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="n">n</span><span class="p">,))</span>  <span class="c1"># Any nonzero vector.</span>
+    <span class="n">lambda_k</span><span class="p">,</span> <span class="n">lambda_prev</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span> 
+    
+    <span class="c1"># Factorize A into [L|U].</span>
+    <span class="c1"># NOTE(mmorais): Use P^T to reorder the right-hand side.</span>
+    <span class="n">P</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">U</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">lu</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="nb">abs</span><span class="p">(</span><span class="n">lambda_k</span> <span class="o">-</span> <span class="n">lambda_prev</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">:</span>
+        <span class="c1"># Solve A y_k = x_k for y_k.</span>
+        <span class="c1"># 1. Solve L yy = x_k for yy.</span>
+        <span class="n">yy</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">solve_triangular</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">x_k</span><span class="p">),</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># 2. Solve U y_k = yy for y_k.</span>
+        <span class="n">y_k</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">solve_triangular</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">x_k</span> <span class="o">=</span> <span class="n">y_k</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">y_k</span><span class="p">)</span>
+
+        <span class="n">lambda_prev</span> <span class="o">=</span> <span class="n">lambda_k</span>
+        <span class="n">lambda_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x_k</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">x_k</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">lambda_k</span><span class="p">,</span> <span class="n">x_k</span>
+
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Compute the smallest eigenvalue and corresponding eigenvector.</span>
+<span class="n">w_min</span><span class="p">,</span> <span class="n">v_min</span> <span class="o">=</span> <span class="n">inverse_iteration</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+
+<span class="c1"># Compute the eigenvalues and right eigenvector using numpy.</span>
+<span class="n">w</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+
+<span class="c1"># Compare the smallest eigenvalue to numpy.</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">w_min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">w</span><span class="p">)),)</span>
+
+<span class="c1"># Compare the smallest eigenvector to numpy.</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">v_min</span><span class="p">,</span> <span class="n">v</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">w</span><span class="p">)])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">

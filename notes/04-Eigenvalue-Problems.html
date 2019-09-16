@@ -13276,11 +13276,13 @@ where</p>
 </li>
 <li>symmetric<ul>
 <li>$A = A^T$</li>
+<li>eigenvalues must be real</li>
 </ul>
 </li>
 <li>Hermitian<ul>
 <li>$A = H^H$</li>
 <li>complex analogue to transpose</li>
+<li>eigenvalues must be real</li>
 </ul>
 </li>
 <li>normal<ul>
@@ -13489,6 +13491,10 @@ cond(v):  1288.943965937134
 <p>After convergence, the value $\lambda_k$ is the dominant eigenvalue with  eigenvector $x_k$.</p>
 <ul>
 <li>The dominant eigenvalue is eigenvalue having maximum absolute value.</li>
+</ul>
+<p>The convergence rate of power iteration depends on the ratio $|\lambda_2 / \lambda_1|$ where $|\lambda_2|$ is the eigenvalue having second-largest absolute value.</p>
+<ul>
+<li>Smaller the ratio, the faster the convergence.</li>
 </ul>
 
 </div>
@@ -13844,11 +13850,16 @@ where</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h4 id="Generalized-Eigenvalue-Problem">Generalized Eigenvalue Problem<a class="anchor-link" href="#Generalized-Eigenvalue-Problem">&#182;</a></h4><p>Given $A$ and $B$ which are $n \times n$ matrices
+<h4 id="Generalized-Eigenvalue-Problem">Generalized Eigenvalue Problem<a class="anchor-link" href="#Generalized-Eigenvalue-Problem">&#182;</a></h4><p>Find the eigenvalues and eigenvectors of $A$ and $B$ which are $n \times n$ matrices. 
 $$
 A x = \lambda B x
 $$</p>
-<h4 id="QZ">QZ<a class="anchor-link" href="#QZ">&#182;</a></h4><h4 id="SVD">SVD<a class="anchor-link" href="#SVD">&#182;</a></h4>
+<p>Application to structural vibration problems:</p>
+<ul>
+<li>$A$ represents stiffness</li>
+<li>$B$ represents mass</li>
+</ul>
+<h4 id="SVD">SVD<a class="anchor-link" href="#SVD">&#182;</a></h4>
 </div>
 </div>
 </div>

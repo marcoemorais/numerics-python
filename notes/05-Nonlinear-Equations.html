@@ -13266,14 +13266,14 @@ $$</li>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Find the root of the scalar function using bisection method.</p>
+<p>Find the root of the scalar function $x^2 - 4 \sin(x) = 0$ using bisection method.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
@@ -13336,9 +13336,119 @@ $$</li>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p><strong>Fixed point</strong> of a function $g$ is a value $x$ such that $x = g(x)$.</p>
+<ul>
+<li>Iterative methods for nonlinear equations use fixed-point scheme:
+$$
+x_{k+1} = g(x_k)
+$$</li>
+<li>For some nonlinear equation $f(x) = 0$ there can be <strong>multiple equivalent</strong> choices for $g$.</li>
+</ul>
+<p>Examples, let $f(x) = x^2 - x - 2$ so that $f(2) = 0$</p>
+<ol>
+<li>$g(x) = x^2 - 2$ and $g(2) = 2$</li>
+<li>$g(x) = 1 + 2/x$ and $g(2) = 2$</li>
+<li>$g(x) = \sqrt{x + 2}$ and $g(2) = 2$</li>
+</ol>
 
 </div>
 </div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="05.06-Newton's-Method-in-1D">05.06 Newton's Method in 1D<a class="anchor-link" href="#05.06-Newton's-Method-in-1D">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Truncated-Taylor-Series">Truncated Taylor Series<a class="anchor-link" href="#Truncated-Taylor-Series">&#182;</a></h4><p>The function $f(x + h)$ is a linear function of $h$ that approximates $f$ near $x$.
+$$
+f(x + h) \approxeq f(x) + f'(x) h
+$$</p>
+<h4 id="Newton's-Method">Newton's Method<a class="anchor-link" href="#Newton's-Method">&#182;</a></h4><ol>
+<li>Start with some initial guess $x_0$.</li>
+<li>Compute $x_{k+1} = x_k - \frac{f(x_k)}{f'(x_k)}$.</li>
+<li>Repeat the previous step until some stopping criteria is reached.</li>
+</ol>
+<p><strong>Convergence</strong></p>
+<p>Transform $f(x) = 0$ to the fixed point problem $g(x) = x - f(x) / f'(x)$.</p>
+<ul>
+<li>Convergence rate is quadratic $(r = 2)$.</li>
+<li>The initial guess, $x_0$, must be close to $f(x) = 0$ in order to converge.</li>
+<li>Unlike bisection, Newton's method is <strong>not</strong> guaranteed to converge.</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Find the root of scalar function $x^2 - 4 \sin(x) = 0$ using Newton's method.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="k">def</span> <span class="nf">newton1d</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">dfx</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the root of fx near x0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xk</span><span class="p">,</span> <span class="n">fxk</span><span class="p">,</span> <span class="n">hk</span> <span class="o">=</span> <span class="n">x0</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span>
+    <span class="c1"># Stop iteration when hk = 0 or fx = 0.</span>
+    <span class="k">while</span> <span class="nb">abs</span><span class="p">(</span><span class="n">hk</span><span class="p">)</span><span class="o">/</span><span class="nb">abs</span><span class="p">(</span><span class="n">xk</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">eps</span> <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="n">fxk</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">:</span>
+        <span class="n">fxk</span> <span class="o">=</span> <span class="n">fx</span><span class="p">(</span><span class="n">xk</span><span class="p">)</span>
+        <span class="n">hk</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">fxk</span> <span class="o">/</span> <span class="n">dfx</span><span class="p">(</span><span class="n">xk</span><span class="p">)</span>
+        <span class="n">xk</span> <span class="o">=</span> <span class="n">xk</span> <span class="o">+</span> <span class="n">hk</span>
+    <span class="k">return</span> <span class="n">xk</span>
+
+
+<span class="k">def</span> <span class="nf">fx</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">*</span><span class="n">x</span> <span class="o">-</span> <span class="mf">4.</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">dfx</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mf">2.</span><span class="o">*</span><span class="n">x</span> <span class="o">-</span> <span class="mf">4.</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+
+<span class="n">root</span> <span class="o">=</span> <span class="n">newton1d</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">dfx</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="mf">3.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;root: &quot;</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span>
+
+<span class="c1"># Compare the value at root to 0.</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">fx</span><span class="p">(</span><span class="n">root</span><span class="p">),</span> <span class="mf">0.</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>root:  1.9337537628270212
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">

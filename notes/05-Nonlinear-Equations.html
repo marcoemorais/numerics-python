@@ -13101,7 +13101,7 @@ $$</p>
 </ol>
 <p>Example:
 $$
-x^2 - 4 sin(x) = 0
+x^2 - 4 \sin(x) = 0
 $$</p>
 <ol>
 <li>System of $n$ coupled nonlinear equations in $n$ unknowns, $x$ is vector
@@ -13138,7 +13138,7 @@ $$</p>
 <ol>
 <li><p>$f: \mathbb{R} \rightarrow \mathbb{R}$ with solution $x^*$
 $$
-\text{cond}(f) = 1 / f'(x^*)
+\text{cond}(f) = 1 / |f'(x^*)|
 $$</p>
 <ul>
 <li>Root is ill-conditioned if $f'(x^*) = 0$ eg horizontal.</li>
@@ -13182,7 +13182,7 @@ where</p>
 </li>
 <li>$x^*$ is true solution</li>
 </ul>
-<p><strong>Convergence</strong> given by some rate $r$:
+<p><strong>Convergence</strong> given by ratio of errors of successive iterates and some rate $r$:
 $$
 \lim\limits_{k-&gt;\inf} \frac{||e_{k+1}||}{||e_k||^r} = C
 $$
@@ -13255,7 +13255,7 @@ $$</li>
 <p>Cons</p>
 <ul>
 <li>Convergence is linear ($r = 1, C = 0.5$) which is slow<ul>
-<li>One bit of accuracy gained for each iteration</li>
+<li>One bit of accuracy gained for each iteration (divide by half each iteration)</li>
 </ul>
 </li>
 </ul>
@@ -13281,7 +13281,7 @@ $$</li>
 
 <span class="k">def</span> <span class="nf">bisection1d</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute the root of fx over some interval [a, b].</span>
+<span class="sd">    Compute the root of fx over some interval [a, b] using bisection.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">while</span> <span class="nb">abs</span><span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">:</span>
         <span class="n">m</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span>
@@ -13350,6 +13350,8 @@ $$</li>
 <li>$g(x) = 1 + 2/x$ and $g(2) = 2$</li>
 <li>$g(x) = \sqrt{x + 2}$ and $g(2) = 2$</li>
 </ol>
+<h4 id="Convergence">Convergence<a class="anchor-link" href="#Convergence">&#182;</a></h4><p>If $x^* = g(x^*)$ and $|g'(x^*)| \lt 1$ then there is an interval containing $x^*$ that converges using fixed-point iteration.</p>
+<p>If $|g'(x^*)| \gt 1$, then fixed-point iteration diverges.</p>
 
 </div>
 </div>
@@ -13366,8 +13368,9 @@ $$</li>
 <div class="text_cell_render border-box-sizing rendered_html">
 <h4 id="Truncated-Taylor-Series">Truncated Taylor Series<a class="anchor-link" href="#Truncated-Taylor-Series">&#182;</a></h4><p>The function $f(x + h)$ is a linear function of $h$ that approximates $f$ near $x$.
 $$
-f(x + h) \approxeq f(x) + f'(x) h
+f(x + h) \approx f(x) + f'(x) h
 $$</p>
+<p>Solve nonlinear equation by replacing with linear approximation using Taylor series.</p>
 <h4 id="Newton's-Method">Newton's Method<a class="anchor-link" href="#Newton's-Method">&#182;</a></h4><ol>
 <li>Start with some initial guess $x_0$.</li>
 <li>Compute $x_{k+1} = x_k - \frac{f(x_k)}{f'(x_k)}$.</li>
@@ -13402,14 +13405,16 @@ $$</p>
 
 <span class="k">def</span> <span class="nf">newton1d</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">dfx</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute the root of fx near x0.</span>
+<span class="sd">    Compute the root of fx near x0 using Newton&#39;s method.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">xk</span><span class="p">,</span> <span class="n">fxk</span><span class="p">,</span> <span class="n">hk</span> <span class="o">=</span> <span class="n">x0</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span>
-    <span class="c1"># Stop iteration when hk = 0 or fx = 0.</span>
+    <span class="n">xk</span><span class="p">,</span> <span class="n">fxk</span> <span class="o">=</span> <span class="n">x0</span><span class="p">,</span> <span class="n">fx</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+    <span class="n">hk</span> <span class="o">=</span> <span class="mf">1.</span>  <span class="c1"># Any nonzero value.</span>
+
+    <span class="c1"># Stop iteration when hk = 0 or fxk = 0.</span>
     <span class="k">while</span> <span class="nb">abs</span><span class="p">(</span><span class="n">hk</span><span class="p">)</span><span class="o">/</span><span class="nb">abs</span><span class="p">(</span><span class="n">xk</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">eps</span> <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="n">fxk</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">:</span>
-        <span class="n">fxk</span> <span class="o">=</span> <span class="n">fx</span><span class="p">(</span><span class="n">xk</span><span class="p">)</span>
         <span class="n">hk</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">fxk</span> <span class="o">/</span> <span class="n">dfx</span><span class="p">(</span><span class="n">xk</span><span class="p">)</span>
         <span class="n">xk</span> <span class="o">=</span> <span class="n">xk</span> <span class="o">+</span> <span class="n">hk</span>
+        <span class="n">fxk</span> <span class="o">=</span> <span class="n">fx</span><span class="p">(</span><span class="n">xk</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">xk</span>
 
 
@@ -13421,6 +13426,186 @@ $$</p>
 
 
 <span class="n">root</span> <span class="o">=</span> <span class="n">newton1d</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">dfx</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="mf">3.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;root: &quot;</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span>
+
+<span class="c1"># Compare the value at root to 0.</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">fx</span><span class="p">(</span><span class="n">root</span><span class="p">),</span> <span class="mf">0.</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>root:  1.9337537628270216
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="05.07-Interpolating-Methods-in-1D">05.07 Interpolating Methods in 1D<a class="anchor-link" href="#05.07-Interpolating-Methods-in-1D">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Secant-Method">Secant Method<a class="anchor-link" href="#Secant-Method">&#182;</a></h4><p>Like Newton's Method, but replace explicit derivative with finite difference.
+$$
+x_{k+1} = x_k - f(x_k) \frac{x_k - x_{k-1}}{f(x_k) - f(x_{k-1})}
+$$</p>
+<p>Convergence rate is superlinear ($r \approx 1.618$)</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Find the root of scalar function $x^2 - 4 \sin(x) = 0$ using Secant method.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="k">def</span> <span class="nf">secant1d</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the root of fx near x0 using Secant method.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Initialize xk, xk1 and fxk, fxk1 to current &amp; previous iterate.</span>
+    <span class="n">xk</span><span class="p">,</span> <span class="n">xk1</span> <span class="o">=</span> <span class="n">x0</span><span class="p">,</span> <span class="mf">2.</span><span class="o">*</span><span class="n">x0</span>
+    <span class="n">fxk</span><span class="p">,</span> <span class="n">fxk1</span> <span class="o">=</span> <span class="n">fx</span><span class="p">(</span><span class="n">xk</span><span class="p">),</span> <span class="n">fx</span><span class="p">(</span><span class="n">xk1</span><span class="p">)</span>
+    <span class="n">hk</span> <span class="o">=</span> <span class="mf">1.</span>  <span class="c1"># Any nonzero value.</span>
+
+    <span class="c1"># Stop iteration when hk = 0 or fxk = 0.</span>
+    <span class="k">while</span> <span class="nb">abs</span><span class="p">(</span><span class="n">hk</span><span class="p">)</span><span class="o">/</span><span class="nb">abs</span><span class="p">(</span><span class="n">xk</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">eps</span> <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="n">fxk</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">:</span>
+        <span class="n">hk</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">fxk</span> <span class="o">*</span> <span class="p">(</span><span class="n">xk</span> <span class="o">-</span> <span class="n">xk1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">fxk</span> <span class="o">-</span> <span class="n">fxk1</span><span class="p">)</span>
+        <span class="n">xk</span><span class="p">,</span> <span class="n">xk1</span> <span class="o">=</span> <span class="n">xk</span> <span class="o">+</span> <span class="n">hk</span><span class="p">,</span> <span class="n">xk</span>
+        <span class="n">fxk</span><span class="p">,</span> <span class="n">fxk1</span> <span class="o">=</span> <span class="n">fx</span><span class="p">(</span><span class="n">xk</span><span class="p">),</span> <span class="n">fxk</span>
+    <span class="k">return</span> <span class="n">xk</span>
+
+
+<span class="k">def</span> <span class="nf">fx</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">*</span><span class="n">x</span> <span class="o">-</span> <span class="mf">4.</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="n">root</span> <span class="o">=</span> <span class="n">secant1d</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="mf">3.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;root: &quot;</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span>
+
+<span class="c1"># Compare the value at root to 0.</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">fx</span><span class="p">(</span><span class="n">root</span><span class="p">),</span> <span class="mf">0.</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>root:  1.9337537628270214
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Higher-Degree-Interpolation">Higher-Degree Interpolation<a class="anchor-link" href="#Higher-Degree-Interpolation">&#182;</a></h4><p>Like Secant method, but replace 2-point interpolation with higher degree polyonmial.</p>
+<p>Quadratic interpolation aka Muller's method has superlinear convergence ($r \approx 1.839$)</p>
+<h4 id="Inverse-Interpolation">Inverse Interpolation<a class="anchor-link" href="#Inverse-Interpolation">&#182;</a></h4><p>Fit $x_k$ as a function of $y_k = f(x_k)$ using polynomial $p(y)$.</p>
+<ol>
+<li>Start with initial $a, b, c$ with $b$ straddling $a$ and $c$.</li>
+<li>Compute
+$$
+u = f_b/f_c, \quad v = f_b/f_a, \quad w = f_a/f_c
+$$</li>
+<li>Compute
+$$
+p = v \times (w \times (u-w)(c-b) - (1-u)(b-a)) \quad q = (w-1)(u-1)(v-1)
+$$</li>
+<li>Compute new solution $x_k = b + p / q$.</li>
+<li>Replace $c$ with old $a$, $a$ with old $b$, and $b$ with new $x_k$.</li>
+<li>Repeat from step 2.</li>
+</ol>
+<p>Inverse interpolation also has superlinear convergence ($r \approx 1.839$)</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Find the root of scalar function $x^2 - 4 \sin(x) = 0$ using Inverse Interpolation.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="k">def</span> <span class="nf">inverse_interp</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the root of fx near x0 using Inverse interpolation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Initialize fa, fb, fc.</span>
+    <span class="n">fa</span><span class="p">,</span> <span class="n">fb</span><span class="p">,</span> <span class="n">fc</span> <span class="o">=</span> <span class="n">fx</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">fx</span><span class="p">(</span><span class="n">b</span><span class="p">),</span> <span class="n">fx</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+    <span class="n">hk</span><span class="p">,</span> <span class="n">xk</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span>  <span class="c1"># Any nonzero value.</span>
+
+    <span class="c1"># Stop iteration when hk = 0 or fb = 0.</span>
+    <span class="k">while</span> <span class="nb">abs</span><span class="p">(</span><span class="n">hk</span><span class="p">)</span><span class="o">/</span><span class="nb">abs</span><span class="p">(</span><span class="n">xk</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">eps</span> <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="n">fb</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">:</span>
+        <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">fb</span><span class="o">/</span><span class="n">fc</span><span class="p">,</span> <span class="n">fb</span><span class="o">/</span><span class="n">fa</span><span class="p">,</span> <span class="n">fa</span><span class="o">/</span><span class="n">fc</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">v</span> <span class="o">*</span> <span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="p">(</span><span class="n">u</span><span class="o">-</span><span class="n">w</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="n">b</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.</span><span class="o">-</span><span class="n">u</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">b</span><span class="o">-</span><span class="n">a</span><span class="p">))</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="p">(</span><span class="n">w</span><span class="o">-</span><span class="mf">1.</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">u</span><span class="o">-</span><span class="mf">1.</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">v</span><span class="o">-</span><span class="mf">1.</span><span class="p">)</span>
+        <span class="n">hk</span> <span class="o">=</span> <span class="n">p</span><span class="o">/</span><span class="n">q</span>
+        <span class="n">xk</span> <span class="o">=</span> <span class="n">b</span> <span class="o">+</span> <span class="n">hk</span>
+        <span class="n">c</span><span class="p">,</span> <span class="n">fc</span> <span class="o">=</span> <span class="n">a</span><span class="p">,</span> <span class="n">fa</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">fa</span> <span class="o">=</span> <span class="n">b</span><span class="p">,</span> <span class="n">fb</span>
+        <span class="n">b</span><span class="p">,</span> <span class="n">fb</span> <span class="o">=</span> <span class="n">xk</span><span class="p">,</span> <span class="n">fx</span><span class="p">(</span><span class="n">xk</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">xk</span>
+
+
+<span class="k">def</span> <span class="nf">fx</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">*</span><span class="n">x</span> <span class="o">-</span> <span class="mf">4.</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="n">root</span> <span class="o">=</span> <span class="n">inverse_interp</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mf">3.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;root: &quot;</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span>
 
 <span class="c1"># Compare the value at root to 0.</span>

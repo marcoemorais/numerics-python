@@ -13258,6 +13258,7 @@ $$</li>
 <li>One bit of accuracy gained for each iteration (divide by half each iteration)</li>
 </ul>
 </li>
+<li>Not suitable for solving systems of nonlinear equations</li>
 </ul>
 
 </div>
@@ -13581,7 +13582,7 @@ $$</li>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="k">def</span> <span class="nf">inverse_interp</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">inverse_interp1d</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute the root of fx near x0 using Inverse interpolation.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -13605,7 +13606,7 @@ $$</li>
 <span class="k">def</span> <span class="nf">fx</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">x</span><span class="o">*</span><span class="n">x</span> <span class="o">-</span> <span class="mf">4.</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
-<span class="n">root</span> <span class="o">=</span> <span class="n">inverse_interp</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mf">3.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">)</span>
+<span class="n">root</span> <span class="o">=</span> <span class="n">inverse_interp1d</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mf">3.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;root: &quot;</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span>
 
 <span class="c1"># Compare the value at root to 0.</span>
@@ -13634,6 +13635,330 @@ $$</li>
 </div>
 </div>
 
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="05.08-Hybrid-Methods">05.08 Hybrid Methods<a class="anchor-link" href="#05.08-Hybrid-Methods">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Secant and interpolation methods converge rapidly, but require initial values close to solution.</p>
+<p>Bisection method converges slowly, but are less sensitive to initial values.</p>
+<h4 id="Hybrid-methods">Hybrid methods<a class="anchor-link" href="#Hybrid-methods">&#182;</a></h4><p>Use secant or interpolation, but maintain a bracket around solution.</p>
+<ul>
+<li>If an approximate solution ever falls outside of bracket, perform one iteration of bisection.</li>
+<li>Combines features to achieve speed and reliability.</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="05.09-Newton's-Method-for-Nonlinear-Systems">05.09 Newton's Method for Nonlinear Systems<a class="anchor-link" href="#05.09-Newton's-Method-for-Nonlinear-Systems">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Fixed-Point-Iteration">Fixed-Point Iteration<a class="anchor-link" href="#Fixed-Point-Iteration">&#182;</a></h4><p>For fixed point methods of non-linear systems replace scalar $x$ with vector $x$.</p>
+<p>Problem statement: Find some vector $x$ such that $x = g(x)$ and $g: \mathbb{R}^n \rightarrow \mathbb{R}^n$.</p>
+<h4 id="Convergence">Convergence<a class="anchor-link" href="#Convergence">&#182;</a></h4><p>If spectral radius $\rho$ of Jacobian matrix $\rho(G(x^*)) \lt 1$ then fixed-point iteration converges if started close enough to solution.</p>
+<h4 id="Newton's-Method">Newton's Method<a class="anchor-link" href="#Newton's-Method">&#182;</a></h4><p>In n-dimensions Newton's method given by:
+$$
+x_{k+1} = x_k - J(x_k)^{-1} f(x_k)
+$$
+where</p>
+<ul>
+<li>$J(x)$ is Jacobian matrix of $f$</li>
+</ul>
+<p>In practice, the Jacobian is not inverted but instead solve linear system for $s_k$:
+$$
+J(x_k) s_k = -f(x_k)
+$$
+where</p>
+<ul>
+<li>$s_k$ is Newton step such that $x_{k+1} = x_k + s_k$</li>
+</ul>
+<p>Newton's method for vector functions has quadratic convergence ($r = 2$)</p>
+<p>Cost of Newton's method per iteration is substantial:</p>
+<ul>
+<li>Computing Jacobian matrix: $n^2$</li>
+<li>Solving linear system: $O(n^3)$</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Jacobian-Matrix">Jacobian Matrix<a class="anchor-link" href="#Jacobian-Matrix">&#182;</a></h4><p>Given the nonlinear system of equations $f : \mathbb{R}^n \rightarrow \mathbb{R}^n$:
+$$
+x_1 + 2 x_2 - 2 = 0 \\
+x_1^2 + 4 x_2^2 - 4 = 0
+$$</p>
+<p>The Jacobian matrix of $J(x)$ is formed from:
+$$
+{J_f(x)}_{ij} = \frac{\partial f_i(x)}{\partial x_j}
+$$
+where</p>
+<ul>
+<li>$f_i(x)$ is the ith system of equations</li>
+</ul>
+<p>Given the above system $f$, the partial derivatives are:
+$$
+\frac{\partial f_1(x)}{\partial x_1} = \frac{\partial (x_1 + 2 x_2 - 2)}{\partial x_1} = 1 \\
+\frac{\partial f_1(x)}{\partial x_2} = \frac{\partial (x_1 + 2 x_2 - 2)}{\partial x_2} = 2 \\
+\frac{\partial f_2(x)}{\partial x_1} = \frac{\partial (x_1^2 + 4 x_2^2 - 4)}{\partial x_1} = 2 x_1 \\
+\frac{\partial f_2(x)}{\partial x_2} = \frac{\partial (x_1^2 + 4 x_2^2 - 4)}{\partial x_2} = 8 x_2
+$$</p>
+<p>The Jacobian matrix formed from these partial derivatives is:
+$$
+J(x) =
+\begin{bmatrix}
+\frac{\partial f_1(x)}{\partial x_1} &amp; \frac{\partial f_1(x)}{\partial x_2} \
+\frac{\partial f_2(x)}{\partial x_1} &amp; \frac{\partial f_2(x)}{\partial x_2}</p>
+<h1 id="\end{bmatrix}">\end{bmatrix}<a class="anchor-link" href="#\end{bmatrix}">&#182;</a></h1>\begin{bmatrix}
+1 &amp; 2 \\
+2 x_1 &amp; 8 x_2
+\end{bmatrix}<p>$$</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Use Newton's method to solve the nonlinear system:
+$$
+x_1 + 2 x_2 - 2 = 0 \\
+x_1^2 + 4 x_2^2 - 4 = 0
+$$</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.optimize</span> <span class="k">as</span> <span class="nn">opt</span>
+
+<span class="k">def</span> <span class="nf">newtonNd</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">Jfx</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solve the nonlinear n x n system using Newton&#39;s method.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xk</span><span class="p">,</span> <span class="n">fxk</span> <span class="o">=</span> <span class="n">x0</span><span class="p">,</span> <span class="n">fx</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+
+    <span class="c1"># Stop iteration when ||f(xk)|| = 0.</span>
+    <span class="k">while</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">fxk</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">:</span>
+        <span class="c1"># Solve J(xk) sk = -f(sk) for sk.</span>
+        <span class="n">sk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">Jfx</span><span class="p">(</span><span class="n">xk</span><span class="p">),</span> <span class="o">-</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">fxk</span><span class="p">)</span>
+        <span class="n">xk</span> <span class="o">=</span> <span class="n">xk</span> <span class="o">+</span> <span class="n">sk</span>
+        <span class="n">fxk</span> <span class="o">=</span> <span class="n">fx</span><span class="p">(</span><span class="n">xk</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">xk</span>
+
+
+<span class="k">def</span> <span class="nf">fx</span><span class="p">(</span><span class="n">xk</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the nonlinear system at xk.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="o">-</span><span class="mi">4</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xk</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> 
+                  <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xk</span><span class="p">,</span> <span class="mi">1</span><span class="p">))),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">F</span> <span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">Jfx</span><span class="p">(</span><span class="n">xk</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the Jacobian at xk.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Jf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">8</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">xk</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Jf</span> <span class="o">*</span> <span class="n">x</span>  <span class="c1"># Elementwise multiplication.</span>
+
+
+<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<span class="n">root</span> <span class="o">=</span> <span class="n">newtonNd</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">Jfx</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;root: &quot;</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span>
+
+<span class="c1"># Compare to the value returned from scipy.optimize.root.</span>
+<span class="n">expected</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">root</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="n">Jfx</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">expected</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>root:  [-6.27144051e-09  1.00000000e+00]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="05.10-Secant-Updating-Methods">05.10 Secant Updating Methods<a class="anchor-link" href="#05.10-Secant-Updating-Methods">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Secant updating methods reduce cost of Newton's method by:</p>
+<ul>
+<li>Build an approximate Jacobian rather than explicit derivatives</li>
+<li>Use factorization of approximate Jacobian to avoid repeated computation at each iteration</li>
+</ul>
+<p>Secant updating methods have superlinear convergence ($1 \lt r \lt 2$)</p>
+<h4 id="Broyden's-Method">Broyden's Method<a class="anchor-link" href="#Broyden's-Method">&#182;</a></h4><ol>
+<li>Start with some initial guess $x_0$ and approximate Jacobian $B_0$.</li>
+<li>Solve $B_k s_k = -f(x_k)$ for $s_k$.</li>
+<li>Compute $x_{k+1} = x_k + s_k$.</li>
+<li>Compute difference in iterates $y_k = f(x_{k+1}) - f(x_k)$.</li>
+<li>Update approximate Jacobian (note: use of outer product in numerator)
+$$
+B_{k+1} = B_k + \frac{(y_k - B_k s_k) s_k^T}{s_k^T s_k}
+$$</li>
+</ol>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Use Broyden's method to solve the nonlinear system:
+$$
+x_1 + 2 x_2 - 2 = 0 \\
+x_1^2 + 4 x_2^2 - 4 = 0
+$$</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.optimize</span> <span class="k">as</span> <span class="nn">opt</span>
+
+<span class="k">def</span> <span class="nf">broyden</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">B0</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solve the nonlinear n x n system using Broyden&#39;s method.</span>
+<span class="sd">    </span>
+<span class="sd">    The value B0 is an initial guess for the approximate Jacobian.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xk</span><span class="p">,</span> <span class="n">fxk</span><span class="p">,</span> <span class="n">Bk</span> <span class="o">=</span> <span class="n">x0</span><span class="p">,</span> <span class="n">fx</span><span class="p">(</span><span class="n">x0</span><span class="p">),</span> <span class="n">B0</span>
+
+    <span class="c1"># Stop iteration when ||f(xk)|| = 0.</span>
+    <span class="k">while</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">fxk</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">:</span>
+        <span class="c1"># Solve Bk sk = -f(xk) for sk.</span>
+        <span class="n">sk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">Bk</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">fxk</span><span class="p">)</span>
+        <span class="n">xk</span> <span class="o">=</span> <span class="n">xk</span> <span class="o">+</span> <span class="n">sk</span>
+        <span class="n">fxk1</span> <span class="o">=</span> <span class="n">fx</span><span class="p">(</span><span class="n">xk</span><span class="p">)</span>
+        <span class="c1"># Compute difference in iterates.</span>
+        <span class="n">yk</span> <span class="o">=</span> <span class="n">fxk1</span> <span class="o">-</span> <span class="n">fxk</span>
+        <span class="c1"># Update approximate Jacobian.</span>
+        <span class="n">Bk</span> <span class="o">=</span> <span class="n">Bk</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">yk</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Bk</span><span class="p">,</span> <span class="n">sk</span><span class="p">),</span> <span class="n">sk</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">sk</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">sk</span><span class="p">)</span>
+        <span class="n">fxk</span> <span class="o">=</span> <span class="n">fxk1</span>
+    <span class="k">return</span> <span class="n">xk</span>
+
+
+<span class="k">def</span> <span class="nf">fx</span><span class="p">(</span><span class="n">xk</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the nonlinear system at xk.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="o">-</span><span class="mi">4</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xk</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> 
+                  <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xk</span><span class="p">,</span> <span class="mi">1</span><span class="p">))),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">F</span> <span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+
+<span class="c1"># Initial guess and approximate Jacobian.</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<span class="n">B0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">16</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">root</span> <span class="o">=</span> <span class="n">broyden</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">B0</span><span class="o">=</span><span class="n">B0</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;root: &quot;</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span>
+
+<span class="c1"># Compare to the value returned from scipy.optimize.root.</span>
+<span class="c1"># NOTE(mmorais): When using `broyden1` explicit tolerance required.</span>
+<span class="n">expected</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">root</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;broyden1&#39;</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">expected</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>root:  [-7.78185824e-11  1.00000000e+00]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Summary:-Nonlinear-Equations">Summary: Nonlinear Equations<a class="anchor-link" href="#Summary:-Nonlinear-Equations">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li>Bisection is a safe, but slow method suitable for 1D only.</li>
+<li>Secant and Newton's method are fast, but risky methods.<ul>
+<li>Newton's method in 1D requires explicit derivative and in 2D Jacobian.</li>
+</ul>
+</li>
+<li>Hybrid methods combine fast methods with bisection when approximate solution goes out of a bracket aka interval.</li>
+<li>Newton's method in 2D is expensive since it requires computing Jacobian and solving a linear system.</li>
+<li>Broyden's method (2D) reduces cost in comparison to Newton's method due to use of approximate Jacobian.</li>
+</ul>
+
+</div>
+</div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">

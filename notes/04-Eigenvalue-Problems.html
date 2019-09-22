@@ -13640,10 +13640,14 @@ $$</p>
 <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">w_min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">w</span><span class="p">)),)</span>
 
 <span class="c1"># Compare the smallest eigenvector to numpy.</span>
-<span class="c1"># NOTE(mmorais): Use absolute value of components of eigenvector.</span>
+<span class="c1"># NOTE(mmorais): Use abs value of inner product of unit eigenvectors.</span>
 <span class="c1"># Since eigenvectors are not unique, they can be scaled arbitrarily</span>
-<span class="c1"># (eg multiplied by 1 or -1).</span>
-<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">v_min</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">v</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">w</span><span class="p">)]))</span>
+<span class="c1"># (eg multiplied by 1 or -1).  Two eigenvectors are equal if the</span>
+<span class="c1"># innner product of their unit vectors are +1 (parallel and same </span>
+<span class="c1"># direction) or -1 (parallel but opposite direction).</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">v_min</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v_min</span><span class="p">)),</span> 
+    <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">v</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">w</span><span class="p">)]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">w</span><span class="p">)])))</span>
 </pre></div>
 
     </div>

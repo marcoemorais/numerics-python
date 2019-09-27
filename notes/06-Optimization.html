@@ -13231,13 +13231,13 @@ $$</p>
 <ul>
 <li>$f(x^*)$ is minimum of $f$ on $[a, b]$</li>
 <li>$f$ is strictly decreasing for $x \leq x^*$</li>
-<li>$f$ is strictly increasing for $x \leq x^*$</li>
+<li>$f$ is strictly increasing for $x^* \leq x$</li>
 </ul>
 <p>For optimization problems, unimodality enables discarding portion of interval analogous to interval bisection for nonlinear equations.</p>
 <h4 id="Golden-Section-Search">Golden Section Search<a class="anchor-link" href="#Golden-Section-Search">&#182;</a></h4><p>Let $x_1$ and $x_2$ be two points on the interval $[a, b]$ and assume that $f$ is unimodal.</p>
 <ul>
-<li>If $f(x_1) &lt; f(x_2)$, then the minimum must in interval $[a, x_2]$.</li>
-<li>If $f(x_1) &gt; f(x_2)$, then the minimum must in interval $[x_2, b]$.</li>
+<li>If $f(x_1) &lt; f(x_2)$, then the minimum is not in interval $[x_2, b]$.</li>
+<li>If $f(x_1) &gt; f(x_2)$, then the minimum is not in interval $[a, x_1]$.</li>
 </ul>
 <p>How to choose the points $x_1$ and $x_2$?</p>
 <ul>
@@ -13267,6 +13267,11 @@ $$</p>
 <p>Convergence rate is quadratic ($r = 2$).</p>
 <ul>
 <li>The initial guess, $x_0$ must be close to minimum in order to converge.</li>
+</ul>
+<h4 id="Safeguarded-Methods">Safeguarded Methods<a class="anchor-link" href="#Safeguarded-Methods">&#182;</a></h4><p>As with nonlinear equations, slow-but-sure methods can be combined with fast-but-risky.</p>
+<ul>
+<li>Popular combination for library routines is golden section search with parabolic interpolation.</li>
+<li>Newton's Method requires derivatives and, as a result is not as popular.</li>
 </ul>
 
 </div>
@@ -13317,7 +13322,7 @@ $$</p>
 
 
 <span class="k">def</span> <span class="nf">fx</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">-</span> <span class="n">x</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mf">2.</span><span class="p">))</span>
+    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">-</span> <span class="n">x</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="p">)</span>
 
 
 <span class="n">tol</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
@@ -13347,6 +13352,94 @@ $$</p>
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>minx:   0.7071067871818779
+minfx:  0.07111805751964656
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Find the minimum of $f(x) = 0.5 - x e^{-x^2}$ over the interval $[0, 2]$ using Newton's method.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.optimize</span> <span class="k">as</span> <span class="nn">opt</span>
+
+<span class="k">def</span> <span class="nf">newton1d</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">dfx</span><span class="p">,</span> <span class="n">ddfx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find the minimum of f on interval [a, b] using Newton&#39;s method.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># NOTE(mmorais): Newton&#39;s method very sensitive to x0.</span>
+    <span class="c1"># Initialized x0 to random value in [a, b], but the solution</span>
+    <span class="c1"># will frequently fail to converge.  Eventually settled on </span>
+    <span class="c1"># midpoint of the interval which converges for this problem.</span>
+    <span class="c1">#x0 = a + np.random.random() * (b - a)</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span>
+    <span class="n">xk</span><span class="p">,</span> <span class="n">fxk</span> <span class="o">=</span> <span class="n">x0</span><span class="p">,</span> <span class="n">fx</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+    <span class="n">fxk_prev</span> <span class="o">=</span> <span class="n">fxk</span> <span class="o">+</span> <span class="mf">1.</span>
+
+    <span class="c1"># Stop iteration when there is no change in fxk.</span>
+    <span class="k">while</span> <span class="nb">abs</span><span class="p">(</span><span class="n">fxk</span> <span class="o">-</span> <span class="n">fxk_prev</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
+        <span class="n">hk</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">dfx</span><span class="p">(</span><span class="n">xk</span><span class="p">)</span> <span class="o">/</span> <span class="n">ddfx</span><span class="p">(</span><span class="n">xk</span><span class="p">)</span>
+        <span class="n">xk</span> <span class="o">=</span> <span class="n">xk</span> <span class="o">+</span> <span class="n">hk</span>
+        <span class="n">fxk_prev</span> <span class="o">=</span> <span class="n">fxk</span>
+        <span class="n">fxk</span> <span class="o">=</span> <span class="n">fx</span><span class="p">(</span><span class="n">xk</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">xk</span><span class="p">,</span> <span class="n">fxk</span>
+
+
+<span class="k">def</span> <span class="nf">fx</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">-</span> <span class="n">x</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">dfx</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">ex2</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">x</span><span class="o">*</span><span class="n">x</span> <span class="o">*</span> <span class="n">ex2</span> <span class="o">-</span> <span class="n">ex2</span>
+
+<span class="k">def</span> <span class="nf">ddfx</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">ex2</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mf">6.</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="n">ex2</span> <span class="o">-</span> <span class="mf">4.</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">ex2</span>
+
+
+<span class="n">tol</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+
+<span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">2.</span>
+<span class="n">minx</span><span class="p">,</span> <span class="n">minfx</span> <span class="o">=</span> <span class="n">newton1d</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">dfx</span><span class="p">,</span> <span class="n">ddfx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;minx:  &quot;</span><span class="p">,</span> <span class="n">minx</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;minfx: &quot;</span><span class="p">,</span> <span class="n">minfx</span><span class="p">)</span>
+
+<span class="c1"># Compare to the value returned from scipy.optimize.minimize_scalar.</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">minimize_scalar</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">),</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">minx</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>minx:   0.7071067811865475
 minfx:  0.07111805751964656
 </pre>
 </div>

@@ -13725,11 +13725,10 @@ J(x) =
 \begin{bmatrix}
 \frac{\partial f_1(x)}{\partial x_1} &amp; \frac{\partial f_1(x)}{\partial x_2} \\
 \frac{\partial f_2(x)}{\partial x_1} &amp; \frac{\partial f_2(x)}{\partial x_2}
-\end{bmatrix} \\
-\quad = 
+\end{bmatrix} = 
 \begin{bmatrix}
 1 &amp; 2 \\
-2 x_1 &amp; 8 x_2 \\
+2 x_1 &amp; 8 x_2
 \end{bmatrix}
 $$</p>
 
@@ -13838,16 +13837,21 @@ $$</p>
 <li>Use factorization of approximate Jacobian to avoid repeated computation at each iteration</li>
 </ul>
 <p>Secant updating methods have superlinear convergence ($1 \lt r \lt 2$)</p>
+<ul>
+<li>Slower to converge than Newton's method, but cost-per-iteration is less.</li>
+</ul>
 <h4 id="Broyden's-Method">Broyden's Method<a class="anchor-link" href="#Broyden's-Method">&#182;</a></h4><ol>
 <li>Start with some initial guess $x_0$ and approximate Jacobian $B_0$.</li>
 <li>Solve $B_k s_k = -f(x_k)$ for $s_k$.</li>
 <li>Compute $x_{k+1} = x_k + s_k$.</li>
 <li>Compute difference in iterates $y_k = f(x_{k+1}) - f(x_k)$.</li>
-<li>Update approximate Jacobian (note: use of outer product in numerator)
+<li>Update approximate Jacobian (note: use of outer product in numerator).
 $$
 B_{k+1} = B_k + \frac{(y_k - B_k s_k) s_k^T}{s_k^T s_k}
 $$</li>
+<li>Repeat from step 2 until some stopping criteria is reached.</li>
 </ol>
+<p>Replace $B_k$ update with factorization to reduce $O(n^3)$ work to $O(n^2)$.</p>
 
 </div>
 </div>
@@ -13884,6 +13888,7 @@ $$</p>
     <span class="k">while</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">fxk</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">:</span>
         <span class="c1"># Solve Bk sk = -f(xk) for sk.</span>
         <span class="n">sk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">Bk</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">fxk</span><span class="p">)</span>
+        <span class="c1"># Update xk.</span>
         <span class="n">xk</span> <span class="o">=</span> <span class="n">xk</span> <span class="o">+</span> <span class="n">sk</span>
         <span class="n">fxk1</span> <span class="o">=</span> <span class="n">fx</span><span class="p">(</span><span class="n">xk</span><span class="p">)</span>
         <span class="c1"># Compute difference in iterates.</span>

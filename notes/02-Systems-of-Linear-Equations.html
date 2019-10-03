@@ -14150,8 +14150,14 @@ $$</li>
 <ul>
 <li>Solving linear systems is fundamental.</li>
 <li>Sensitivity of linear system measured by $\text{cond}(A)$.</li>
-<li>Triangular systems easily solvable using forward or back substitution.</li>
-<li>General linear system solved by transforming to triangular form using Gaussian elimination or LU factorization.</li>
+<li>Triangular systems easily solvable using forward or back substitution.<ul>
+<li>Complexity is $O(n^2)$ multiplications and additions.</li>
+</ul>
+</li>
+<li>General linear system solved by transforming to triangular form using Gaussian elimination or LU factorization.<ul>
+<li>Complexity is $O(n^3/3)$ multiplications and additions.</li>
+</ul>
+</li>
 <li>Pivoting essential for stability of Gaussian elimination.</li>
 <li>Specialized software such as LAPACK and BLAS available for solving linear systems.</li>
 </ul>

@@ -13137,6 +13137,8 @@ where</p>
 <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">v</span><span class="p">),</span> <span class="n">w</span> <span class="o">*</span> <span class="n">v</span><span class="p">)</span>
 <span class="c1"># Confirm eigenvalues are equal to diagonal.</span>
 <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">A</span><span class="p">))</span>
+<span class="c1"># Confirm eigenvectors are identity matrix.</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
 
 <span class="c1"># Triangular matrix.</span>
 <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
@@ -13180,7 +13182,7 @@ where</p>
 $$
 (A - \lambda I) x = 0
 $$</p>
-<p>In order for the eigenvectors $x$ from the equation above to be nonsingular, then the matrix $(A - \lambda I)$ must be singular. The determinant of $(A - \lambda I)$ is known as the <strong>characteristic equation</strong> of the matrix $A$.
+<p>The determinant of $(A - \lambda I)$ is known as the <strong>characteristic equation</strong> of the matrix $A$.
 $$
 \text{det}(A - \lambda I) = 0
 $$</p>
@@ -13202,6 +13204,11 @@ $$<p>where</p>
 <ul>
 <li>Useful theoretical tool, but not useful numerically.</li>
 </ul>
+<p>The determinant of a matrix $A$ is the product of the eigenvalues
+$$
+|A| = \lambda_1 \lambda_2 \cdots \lambda_n
+$$</p>
+<p>Fundamental Theorm of Algebra: The $n \times n$ matrix $A$ always has $n$ eigenvalues, but they might not be real nor distinct.</p>
 <h4 id="Companion-Matrix">Companion Matrix<a class="anchor-link" href="#Companion-Matrix">&#182;</a></h4><p>For any polynomial, there is an associated matrix whose eigenvalues are the roots of the polynomial.</p>
 <ul>
 <li>The polynomial is referred to as <strong>monic</strong>.</li>
@@ -13210,7 +13217,7 @@ $$<p>where</p>
 </ul>
 <h4 id="Multiplicity">Multiplicity<a class="anchor-link" href="#Multiplicity">&#182;</a></h4><p>Number of times root appears when polynomial is written as product of linear factors.</p>
 <ul>
-<li>Defective matrix has eigenvalue of multiplicity $k \gt 1$ with fewer than $k$ linearly independent corresponding eigenvectors.</li>
+<li>An $n \times n$ matrix with fewer than $n$ linearly independent eigenvectors is <strong>defective</strong>.</li>
 </ul>
 <h4 id="Diagonalizable">Diagonalizable<a class="anchor-link" href="#Diagonalizable">&#182;</a></h4><p>Nondefective matrix $A$ with $n$ linearly independent eigenvectors has the similarity transform:
 $$
@@ -13266,7 +13273,8 @@ where</p>
 </ul>
 </li>
 <li>orthogonal<ul>
-<li>$A^T A = A A^T = I$ where columns are orthonormal</li>
+<li>$Q^T Q = Q Q^T = I$ which is equivalent to $Q^{T} = Q^{-1}$</li>
+<li>columns and rows are orthonormal eg orthogonal unit vectors</li>
 </ul>
 </li>
 <li>unitary<ul>
@@ -13280,7 +13288,10 @@ where</p>
 </ul>
 </li>
 <li>Hermitian<ul>
-<li>$A = H^H$</li>
+<li>$A = H^H$<ul>
+<li>diagonal elements must be real</li>
+</ul>
+</li>
 <li>complex analogue to transpose</li>
 <li>eigenvalues must be real</li>
 </ul>
@@ -13309,6 +13320,7 @@ where</p>
 <ul>
 <li>Previously we looked at conditioning as a property of a matrix, but for eigenvalue problems it is a property of the eigenvectors.</li>
 </ul>
+<p>Eigenvalues may be sensitive if eigenvectors are linearly dependent eg matrix is defective.</p>
 <p>For normal matrix $A^H A = A A^H$ eigenvectors are orthogonal and eigenvalues are well-conditioned.</p>
 
 </div>

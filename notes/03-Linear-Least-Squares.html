@@ -14123,6 +14123,17 @@ where</p>
 </tr>
 </tbody>
 </table>
+<p>Comparing relative error of solutions by method.</p>
+<ul>
+<li>Normal equations method breaks down when condition number is $&gt; 1/\sqrt{\epsilon_{\text{mach}}}$.
+$$
+\text{rel. error} = [\text{cond}(A)]^2
+$$</li>
+<li>Householder method is best possible esp. when residual is small.
+$$
+\text{rel. error} = \text{cond}(A) + ||r||_2 [\text{cond}(A)]^2
+$$</li>
+</ul>
 
 </div>
 </div>

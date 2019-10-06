@@ -13702,6 +13702,12 @@ len(steps):  51
 $$
 {H_f(x)}_{ij} = \frac{\partial^2 f(x)}{\partial x_i \partial x_j}
 $$</p>
+<p>In n-dimensions Newton's method given by:
+$$
+x_{k+1} = x_k - H_f^{-1}(x_k) \nabla f(x_k)
+$$</p>
+<p>In practice, the Hessian is not inverted but instead solve linear system $H_f(x_k) s_k = -\nabla f(x_k)$ for $s_k$.</p>
+<p>Suggests the following method:</p>
 <ol>
 <li>Start with some initial guess $x_0$.</li>
 <li>Solve $H_f(x_k) s_k = -\nabla f(x_k)$ for $s_k$.</li>
@@ -14023,9 +14029,209 @@ len(steps):  8
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Problem-statement">Problem statement<a class="anchor-link" href="#Problem-statement">&#182;</a></h4><p>Given $m$ data points $(t_i, y_i)$ find n-vector $x$ of parameters that gives best fit to model function $f(t, x)$ where $f$ is nonlinear function of $x$.</p>
+<h4 id="Objective-function">Objective function<a class="anchor-link" href="#Objective-function">&#182;</a></h4><p>Minimize the residual $r_i(x) = y_i - f(t_i, x_i)$ where $i = 1, \cdots, m$:
+$$
+\phi(x) = \frac{1}{2} r^T(x) r(x)
+$$</p>
+<p>Gradient of objective function computed from the Jacobian of $r(x)$:
+$$
+\nabla \phi(x) = J^T(x) r(x)
+$$</p>
+<p>Hessian of objective function:
+$$
+H_\phi(x) = J^T(x) J(x) + \sum_{i=1}^m r_i(x) H_i(x)
+$$</p>
+<h4 id="Gauss-Newton-Method">Gauss-Newton Method<a class="anchor-link" href="#Gauss-Newton-Method">&#182;</a></h4><p>When the residual is small we can throw away the sum of the product of residuals and Hessian matrices.
+$$
+J^T(x_k) J(x_k) s_k = -J^T(x_k) r(x_k)
+$$</p>
+<p>The form matches the normal equations $A^T A s_k = A^T r$ and the equivalent system $J(x_k) s_k \approxeq - r(x_k)$ can be solved for $s_k$.</p>
+<ul>
+<li>In effect, we replaced one nonlinear least squares problem with sequence of linear least squares problems.</li>
+</ul>
+<h4 id="Levenberg-Marquardt-Method">Levenberg-Marquardt Method<a class="anchor-link" href="#Levenberg-Marquardt-Method">&#182;</a></h4><p>When Gauss-Newton results in ill-conditioned least squares subproblem, the Levenberg-Marquardt can be used to boost the rank of the matrix by adding a scalar multiple of the identity $u_k$ to the system.
+$$
+(J^T(x_k) J(x_k) + u_k I) s_k = -J^T(x_k) r(x_k)
+$$</p>
+<p>where</p>
+<ul>
+<li>$u_k$ is a hyperparameter of the algorithm</li>
+</ul>
+<p>Corresponding least squares problem:
+$$
+\begin{bmatrix}
+J(x_k) \\
+\sqrt(u_k) I 
+\end{bmatrix}
+s_k \approxeq 
+\begin{bmatrix}
+-r(x_k) \\
+0
+\end{bmatrix}
+$$</p>
 
 </div>
 </div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Find the vector $x$ that gives the best fit to the nonlinear function $f(t, x) = x_1 e^{x_2 t}$ using the data points $t = [0 \quad 1 \quad 2 \quad 3]^T$ and $y = [2 \quad 0.7 \quad 0.3 \quad 0.1]^T$ using the Gauss-Newton method.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.optimize</span> <span class="k">as</span> <span class="nn">opt</span>
+
+<span class="k">def</span> <span class="nf">gauss_newton</span><span class="p">(</span><span class="n">ftx</span><span class="p">,</span> <span class="n">Jftx</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find the mininmum of nonlinear function f(t, x) using Gauss-Newton.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xk</span><span class="p">,</span> <span class="n">xk_prev</span><span class="p">,</span> <span class="n">rxk</span> <span class="o">=</span> <span class="n">x0</span><span class="p">,</span> <span class="n">x0</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">steps</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Stop iteration when there is no change in xk.</span>
+    <span class="k">while</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">xk</span> <span class="o">-</span> <span class="n">xk_prev</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
+        <span class="c1"># Compute residual rxk = y - ftx(t, xk).</span>
+        <span class="n">rxk</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="n">ftx</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">xk</span><span class="p">)</span>
+        <span class="c1"># Compute Jacobian at xk.</span>
+        <span class="n">Jxk</span> <span class="o">=</span> <span class="n">Jftx</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">xk</span><span class="p">)</span>
+        <span class="c1"># Solve J(xk) sk = -r(xk) for sk.</span>
+        <span class="n">sk</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">Jxk</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">rxk</span><span class="p">,</span> <span class="n">rcond</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Update the Newton step.</span>
+        <span class="n">xk</span><span class="p">,</span> <span class="n">xk_prev</span> <span class="o">=</span> <span class="n">xk</span> <span class="o">+</span> <span class="n">sk</span><span class="p">,</span> <span class="n">xk</span>
+        <span class="n">steps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xk</span><span class="p">)</span>  <span class="c1"># For debugging.</span>
+    
+    <span class="k">return</span> <span class="n">xk</span><span class="p">,</span> <span class="n">steps</span>
+
+
+<span class="k">def</span> <span class="nf">ftx</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Evaluate the nonlinear function at (t, x).</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+    <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">Jftx</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Evaluate the Jacobian of the nonlinear function at (t, x).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">expx2t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span>
+    <span class="n">J</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">t</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+    <span class="n">J</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">expx2t</span>
+    <span class="n">J</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">t</span> <span class="o">*</span> <span class="n">expx2t</span>
+    <span class="k">return</span> <span class="n">J</span>
+
+
+<span class="n">tol</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+
+<span class="c1"># Input data $(t_i, y_i)$.</span>
+<span class="n">m</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">3.</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">2.</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">])</span>
+
+<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;d&#39;</span><span class="p">)</span>
+<span class="n">minx</span><span class="p">,</span> <span class="n">steps</span> <span class="o">=</span> <span class="n">gauss_newton</span><span class="p">(</span><span class="n">ftx</span><span class="p">,</span> <span class="n">Jftx</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;minx:       &quot;</span><span class="p">,</span> <span class="n">minx</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;len(steps): &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">steps</span><span class="p">))</span>
+
+<span class="c1"># Compare to the value returned from scipy.optimize.least_squares.</span>
+<span class="c1"># NOTE(mmorais): Re-order arguments to solver so that x is first.</span>
+<span class="n">model</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">y</span> <span class="o">-</span> <span class="n">ftx</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="c1"># NOTE(mmorais): Cost function also takes y, but ignore it. </span>
+<span class="n">cost</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">Jftx</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">least_squares</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="n">cost</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">minx</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>minx:        [ 1.99500331 -1.00952448]
+len(steps):  8
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Plot the observations against the fit.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="o">%</span><span class="k">matplotlib</span> inline
+
+<span class="c1"># Fit the model to a dense 1D-grid of points from [0, 3].</span>
+<span class="n">fitn</span> <span class="o">=</span> <span class="n">m</span><span class="o">*</span><span class="mi">20</span>
+<span class="n">fitx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">3.</span><span class="p">,</span> <span class="n">fitn</span><span class="p">)</span>  <span class="c1"># Actually t.</span>
+<span class="n">fity</span> <span class="o">=</span> <span class="p">[</span><span class="n">ftx</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">minx</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">fitx</span><span class="p">]</span>
+
+<span class="c1"># Plot the fitted model against observations.</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;dodgerblue&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;observations&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fitx</span><span class="p">,</span> <span class="n">fity</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;fit&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Observations vs. Fit&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;t&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
@@ -14051,9 +14257,36 @@ len(steps):  8
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li>Many optimization algorithms are analogous to finding roots of nonlinear equations.<ul>
+<li>Golden section search is somewhat analogous to bisection.</li>
+<li>Newton's method for optimization also uses second-derivative in order to disambiguate critical points which are maximum, minimum, or saddle points.</li>
+</ul>
+</li>
+<li>Unconstrained optimization problems seek zero of gradient of objective function.<ul>
+<li>Methods such as steepest descent require a line search to find out how far along the gradient to travel during a single iteration.</li>
+<li>Newton's method will often converge in a single step, but is sensitive to the value of the initial guess, $x_0$.</li>
+<li>Quasi-Newton methods such as BFGS approximate the Hessian rather than explicitly computing it.</li>
+</ul>
+</li>
+<li>Nonlinear least squares problems can be solved as a sequence of linear least squares problems.</li>
+</ul>
 
 </div>
 </div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
 </div>
     </div>
   </div>

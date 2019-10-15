@@ -13176,6 +13176,7 @@ $$</p>
 <li>Coefficients will be poorly determined.</li>
 <li>Relatively high cost to solve linear system $O(n^3)$.</li>
 <li>Scaling can help reduce the growth in condition number.</li>
+<li>Cost of evaluation using Horner's rule (see below) is $2n$.</li>
 </ul>
 <h4 id="Horner's-Rule">Horner's Rule<a class="anchor-link" href="#Horner's-Rule">&#182;</a></h4><p>Rather than explicitly compute powers, performed nested multiplications of $n$ additions and $n$ multiplications.
 $$
@@ -13318,7 +13319,7 @@ $$
 p_{n-1}(t_i) = y_1 l_1(t_i) + y_2 l_2(t_i) + \cdots + y_n l_n(t_i)
 $$</p>
 <p>Lagrange form of a polynomial obtained for $m$ data points will give same result as $m-1$ degree polynomial obtained using monomial basis.</p>
-<p>Cost of computing the weights is $O(n^2)$ (less than solving linear system as is the case for monomial basis) and cost of evaluating the interpolant is $O(n)$.</p>
+<p>Cost of computing the weights is $O(n^2)$ (less than solving linear system as is the case for monomial basis) and cost of evaluating the interpolant is $O(n)$, but the constant is larger $5n$ in comparison to methods using Horner's rule.</p>
 <h4 id="Newton-Interpolation">Newton Interpolation<a class="anchor-link" href="#Newton-Interpolation">&#182;</a></h4><p>Newton basis functions given by:
 $$
 \pi_j(t) = \prod_{k=1}^{j-1} (t - t_k) \quad j = 1,\cdots,n
@@ -13328,7 +13329,7 @@ $$
 p_{n-1}(t_i) = x_1 + x_2(t - t_1) + x_3(t - t_1)(t - t_2) + \cdots + x_n(t - t_1)(t - t_2)\cdots(t - t_{n-1})
 $$</p>
 <ul>
-<li>Avoid repeated computations using Horner's rule.</li>
+<li>Avoid repeated computations using Horner's rule, cost of evaluation will be $2n$.</li>
 </ul>
 <p>The basis matrix $A$ formed from the linear combination of these basis functions is lower triangular and can be solved using forward substitution (cost = $O(n^2)$).</p>
 <p>Newton basis functions can be constructed incrementally.</p>
@@ -13821,10 +13822,11 @@ $$</p>
 <li>For each knot, there are 4 parameters, $x$, in the cubic eg $p_{3}(t) = x_0 + x_1 t + x_2 t^2 + x_3 t^3$.</li>
 <li>As a result, there are $4(n-1)$ parameters to be determined.<ul>
 <li>Input samples give $2(n-1)$ equations at each subinterval.</li>
-<li>Derivatives give $n-2$ equations at each subinterval.</li>
+<li>First derivatives give $n-2$ equations at each subinterval.</li>
 <li>This still leaves $n$ free parameters to be chosen.</li>
 </ul>
 </li>
+<li>To preserve monotonic data, then Hermite cubic is appropriate.</li>
 </ul>
 <h4 id="Cubic-Spline-Interpolation">Cubic Spline Interpolation<a class="anchor-link" href="#Cubic-Spline-Interpolation">&#182;</a></h4><p>Cubic spline is piecewise cubic polynomial interpolant that is twice differentiable.</p>
 <ul>
@@ -13832,11 +13834,12 @@ $$</p>
 <li>For each knot, there are 4 parameters, $x$, in the cubic eg $p_{3}(t) = x_0 + x_1 t + x_2 t^2 + x_3 t^3$.</li>
 <li>As a result, there are $4(n-1)$ parameters to be determined.<ul>
 <li>Input samples give $2(n-1)$ equations at each subinterval.</li>
-<li>Derivatives give $n-2$ equations at each subinterval.</li>
-<li>Second derivative give $n-2$ equations at each subinterval.</li>
+<li>First derivatives give $n-2$ equations at each subinterval.</li>
+<li>Second derivatives give $n-2$ equations at each subinterval.</li>
 <li>This still leaves 2 free parameters to be chosen.</li>
 </ul>
 </li>
+<li>For maximum smoothness, then a cubic spline is appropriate.</li>
 </ul>
 
 </div>
@@ -14026,7 +14029,7 @@ $$</li>
 <li>Interpolating functions are <strong>exact</strong> fit at sample points.</li>
 <li>Interpolating functions are linear combinations of basis functions with coefficients determined depending on choice of technique.</li>
 <li>Polynomial interpolation.<ul>
-<li>Coefficients for Lagrange interpolation are cheaper to compute and better conditioned than monomial interpolation, but evaluation is about the same.</li>
+<li>Coefficients for Lagrange interpolation are cheaper to compute and better conditioned than monomial interpolation, but cost of evaluation for Lagrange interpolation is a little higher $5n$ vs. $2n$.</li>
 <li>Coefficients for Newton interpolation can be constructed incrementally.</li>
 <li>Convergence depends on location of sample points.<ul>
 <li>Equally spaced sample points are expected to have inflated errors at the extrema.</li>

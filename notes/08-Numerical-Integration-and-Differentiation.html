@@ -13212,7 +13212,10 @@ $$</li>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Compute the integral of $I(f) = \int_0^1 \exp^{-x^2} dx$ using the midpoint, trapezoid, and Simpson's rule and compare to the true result $\approx 0.746824$.</p>
+<p>Use the midpoint, trapezoid, and Simpson's rule to compute the integral below and compare to the true result:
+$$
+I(g) = \int_{0}^1 e^{-t^2} dt \approx 0.746824
+$$</p>
 
 </div>
 </div>
@@ -13297,14 +13300,28 @@ simpson:    0.7471804289095104
 </ul>
 <h4 id="Gaussian-Quadrature">Gaussian Quadrature<a class="anchor-link" href="#Gaussian-Quadrature">&#182;</a></h4><p>Nodes and weights are chosen to maximize degree.</p>
 <ul>
-<li>Derived by method of undetermined coefficients.</li>
+<li>Derived by method of undetermined coefficients.<ul>
+<li>Observe that the integrand is not required to determine $x$ and $w$.</li>
+</ul>
+</li>
 <li>Nodes and weights are parameters to be determined.<ul>
 <li>Unlike Newton-Cotes in which nodes are fixed and equally spaced.</li>
 </ul>
 </li>
 <li>An n-point Gaussian quadrature rule is of degree $2n - 1$.</li>
 </ul>
-<h5 id="Example">Example<a class="anchor-link" href="#Example">&#182;</a></h5><p>Derive two-point Gaussian rule on $[-1, 1]$.
+<h4 id="Change-of-Variable">Change of Variable<a class="anchor-link" href="#Change-of-Variable">&#182;</a></h4><p>Gaussian quadrature rules for the integrand $I(g)$ and computed for an interval $x$ given by $[\alpha, \beta]$ can be transformed to another interval $[a, b]$.
+$$
+I(g) = \frac{b-a}{\beta - \alpha} \sum_{i=1}^n w_i g \left( \frac{(b-a)x_i + a \beta - b \alpha}{\beta - \alpha} \right)
+$$</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h5 id="Example">Example<a class="anchor-link" href="#Example">&#182;</a></h5><p>Derive 2-point Gaussian rule on $[-1, 1]$.
 $$
 G_2(f) = w_1 f(x_1) + w_2 f(x_2)
 $$</p>
@@ -13313,16 +13330,185 @@ $$
 w_1 + w_2 = \int_{-1}^{1} dx = 2 \\
 w_1 x_1 + w_2 x_2 = \int_{-1}^{1} x dx = 0 \\
 w_1 x_1^2 + w_2 x_2^2 = \int_{-1}^{1} x^2 dx = 2/3 \\
-w_1 x_1^3 + w_2 x_2^3 = \int_{-1}^{1} x^3 dx = 2 \\
+w_1 x_1^3 + w_2 x_2^3 = \int_{-1}^{1} x^3 dx = 0 \\
 $$</p>
-<p>Solve for $w_1, w_2, x_1, x_2$ using Gauss-Newton method or Levenberg-Marquardt.</p>
+<p>The Jacobian matrix, $J(x)$ of partial derivatives for this system is:
+$$
+J(x) = 
+\begin{bmatrix}
+\frac{\partial f_1}{\partial w_1} &amp; \frac{\partial f_1}{\partial x_1} &amp; \frac{\partial f_1}{\partial w_2} &amp; \frac{\partial f_1}{\partial x_2} \\
+\frac{\partial f_2}{\partial w_1} &amp; \frac{\partial f_2}{\partial x_1} &amp; \frac{\partial f_2}{\partial w_2} &amp; \frac{\partial f_2}{\partial x_2} \\
+\frac{\partial f_3}{\partial w_1} &amp; \frac{\partial f_3}{\partial x_1} &amp; \frac{\partial f_3}{\partial w_2} &amp; \frac{\partial f_3}{\partial x_2} \\
+\frac{\partial f_4}{\partial w_1} &amp; \frac{\partial f_4}{\partial x_1} &amp; \frac{\partial f_4}{\partial w_2} &amp; \frac{\partial f_4}{\partial x_2}
+\end{bmatrix}
+$$</p>
+<p>Solve for $w_1, w_2, x_1, x_2$ using Newton's method for nonlinear systems.</p>
+<p>The expected solution is:</p>
 <ul>
 <li>$x_1 = -1/\sqrt{3}, x_2 = 1/\sqrt{3}, w_1 = 1, w_2 = 1$</li>
 <li>$G_2(f) = 1 \cdot f(-1/\sqrt{3}) + 1 \cdot f(1/\sqrt{3})$</li>
 </ul>
+<p>A 2-point Gaussian quadrature rule is of degree 3 where $(3 = 2n - 1; n = 2)$.</p>
 
 </div>
 </div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.optimize</span> <span class="k">as</span> <span class="nn">opt</span>
+
+<span class="k">def</span> <span class="nf">fx</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the residuals for the system using x = [w1, x1, w2, x2]^T.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="mf">2.</span>
+    <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">res</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mf">2.</span><span class="o">/</span><span class="mf">3.</span>
+    <span class="n">res</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">res</span>
+
+
+<span class="k">def</span> <span class="nf">Jfx</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute Jacobian matrix of partial derivatives of f_i wrt x_i.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">jac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+    <span class="n">jac</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">])</span>
+    <span class="n">jac</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+    <span class="n">jac</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">2</span><span class="p">),</span> <span class="mf">2.</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                          <span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="mi">2</span><span class="p">),</span> <span class="mf">2.</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+    <span class="n">jac</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">3</span><span class="p">),</span> <span class="mf">3.</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                          <span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="mi">3</span><span class="p">),</span> <span class="mf">3.</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+    <span class="k">return</span> <span class="n">jac</span>
+
+
+<span class="c1"># Find the root of the nonlinear system using scipy.optimize.root.</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">root</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="n">Jfx</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_equal</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">success</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># NOTE(mmorais): There are two solutions with sign of x1 and x2 flipped.</span>
+<span class="n">expected1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.</span><span class="o">/</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)])</span>
+<span class="n">expected2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="mf">1.</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.</span><span class="o">/</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)])</span>
+<span class="n">expected</span> <span class="o">=</span> <span class="n">expected1</span> <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.</span> <span class="k">else</span> <span class="n">expected2</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Use the 2-point Gaussian quadrature rule computed in the previous step to solve the following integral:
+$$
+I(g) = \int_{-1}^1 e^{-t^2} dt
+$$</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.integrate</span> <span class="k">as</span> <span class="nn">integrate</span>
+
+<span class="k">def</span> <span class="nf">gaussian_quadrature</span><span class="p">(</span><span class="n">ft</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return definite integral of ft dt using n-point Gaussian quadrature.</span>
+<span class="sd">    </span>
+<span class="sd">    ft is the function to integrate.</span>
+<span class="sd">    x are the nodes of integration.</span>
+<span class="sd">    w are the weights of integration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">vft</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">ft</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">vft</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+
+<span class="c1"># Integrate using 2-point Gaussian quadrature rule.</span>
+<span class="c1"># NOTE(mmorais): Nodes and weights computed from previous step.</span>
+<span class="n">ft</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span><span class="o">*</span><span class="n">t</span><span class="o">*</span><span class="n">t</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">1.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="mf">1.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)])</span>
+<span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">])</span>
+<span class="c1"># NOTE(mmorais): Limits of integration not passed, implicit in rule.</span>
+<span class="n">g2</span> <span class="o">=</span> <span class="n">gaussian_quadrature</span><span class="p">(</span><span class="n">ft</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+
+<span class="c1"># Compare to result obtained from scipy.integrate.fixed_quad.</span>
+<span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span>
+<span class="n">expected</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">fixed_quad</span><span class="p">(</span><span class="n">ft</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">g2</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Use the 2-point Gaussian quadrature rule along with the change of variable to solve the following integral:
+$$
+I(g) = \int_{-2}^2 e^{-t^2} dt
+$$</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.integrate</span> <span class="k">as</span> <span class="nn">integrate</span>
+
+<span class="k">def</span> <span class="nf">gaussian_quadrature</span><span class="p">(</span><span class="n">ft</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="n">a2</span><span class="p">,</span> <span class="n">b2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return definite integral of ft dt using n-point Gaussian quadrature.</span>
+<span class="sd">    </span>
+<span class="sd">    Use a change of variable to modify the limits of integration.</span>
+
+<span class="sd">    ft is the function to integrate.</span>
+<span class="sd">    x are the nodes of integration.</span>
+<span class="sd">    w are the weights of integration.</span>
+<span class="sd">    [a1, b1] are the limits of integration used to compute the rule.</span>
+<span class="sd">    [a2, b2] are the new limits of integration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">b1a1</span><span class="p">,</span> <span class="n">b2a2</span> <span class="o">=</span> <span class="n">b1</span><span class="o">-</span><span class="n">a1</span><span class="p">,</span> <span class="n">b2</span><span class="o">-</span><span class="n">a2</span>
+    <span class="n">vft</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">ft</span><span class="p">)</span>
+    <span class="n">x2</span> <span class="o">=</span> <span class="n">vft</span><span class="p">((</span><span class="n">b2a2</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">a2</span><span class="o">*</span><span class="n">b1</span> <span class="o">-</span> <span class="n">b2</span><span class="o">*</span><span class="n">a1</span><span class="p">)</span><span class="o">/</span><span class="n">b1a1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">b2a2</span><span class="o">/</span><span class="n">b1a1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">x2</span><span class="p">)</span>
+
+
+<span class="c1"># Integrate using 2-point Gaussian quadrature rule.</span>
+<span class="c1"># NOTE(mmorais): Nodes and weights computed from previous step.</span>
+<span class="n">ft</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span><span class="o">*</span><span class="n">t</span><span class="o">*</span><span class="n">t</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">1.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="mf">1.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)])</span>
+<span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">])</span>
+<span class="n">a1</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="n">a2</span><span class="p">,</span> <span class="n">b2</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.</span><span class="p">,</span> <span class="mf">2.</span>
+<span class="n">g2</span> <span class="o">=</span> <span class="n">gaussian_quadrature</span><span class="p">(</span><span class="n">ft</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="n">a2</span><span class="p">,</span> <span class="n">b2</span><span class="p">)</span>
+
+<span class="c1"># Compare to result obtained from scipy.integrate.fixed_quad.</span>
+<span class="n">expected</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">fixed_quad</span><span class="p">(</span><span class="n">ft</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a2</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">b2</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">g2</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
@@ -13334,7 +13520,151 @@ $$</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Composite-Quadrature">Composite Quadrature<a class="anchor-link" href="#Composite-Quadrature">&#182;</a></h4><p>Subdivide original interval $[a, b]$ into $k$ subintervals of length $h = (b-a)/k$ and apply simple quadrature rule in each subinterval.</p>
+<ul>
+<li>Equivalent to using piecewise interpolation for quadrature.</li>
+<li>Easily made progressive.</li>
+</ul>
+<p>Composite midpoint rule
+$$
+M_k(f) = h \sum_{j=1}^k f \left( \frac{x_{j-1} + x_j}{2} \right)
+$$</p>
+<p>Composite trapezoid rule
+$$
+T_k(f) = h \left( \frac{1}{2} f(a) + f(x_1) + \cdots + f(x_{k-1}) + \frac{1}{2} f(b) \right)
+$$</p>
+<p>The nodes along the interval are given by: $x_j = a + jh, \quad j=0, \cdots, k$</p>
+<h4 id="Adaptive-Quadrature">Adaptive Quadrature<a class="anchor-link" href="#Adaptive-Quadrature">&#182;</a></h4><p>Recursively apply composite quadrature to smaller subintervals until the difference between the rules falls below an error tolerance.</p>
+<p>Weaknesses</p>
+<ul>
+<li>Points at which integrand function is sampled might not include significant features.</li>
+<li>Potentially inefficient in handling discontinuities in integrand.</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Use the composite trapezoid rule to compute the integral below:
+$$
+I(g) = \int_{0}^1 e^{-t^2} dt \approx 0.746824
+$$</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="k">def</span> <span class="nf">quad_trapezoid_composite</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return definite integral of fx dx from [a, b] using trapezoid rule.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">*</span><span class="p">(</span><span class="n">b</span><span class="o">-</span><span class="n">a</span><span class="p">)</span><span class="o">/</span><span class="n">k</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">a</span><span class="o">+</span><span class="n">h</span><span class="p">,</span> <span class="n">b</span><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">vfx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">fx</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">h</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.5</span><span class="o">*</span><span class="n">fx</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">vfx</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">fx</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
+
+
+<span class="c1"># Integrate using composite trapezoid rule.</span>
+<span class="n">fx</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span><span class="o">*</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="p">)</span>
+<span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mi">10</span>
+<span class="n">Ifx</span> <span class="o">=</span> <span class="n">quad_trapezoid_composite</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;composite trapezoid: &quot;</span><span class="p">,</span> <span class="n">Ifx</span><span class="p">)</span>
+
+<span class="c1"># Compare to result obtained from numpy.trapz.</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">vfx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">fx</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">vfx</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">expected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">Ifx</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>composite trapezoid:  0.7462107961317495
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="08.05-Special-Integration-Problems">08.05 Special Integration Problems<a class="anchor-link" href="#08.05-Special-Integration-Problems">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Tabular-Integration">Tabular Integration<a class="anchor-link" href="#Tabular-Integration">&#182;</a></h4><p>For integrands defined by values at discrete points, use piecewise interpolant.</p>
+<ul>
+<li>Good interpolants: Hermite cubic or cubic spline</li>
+</ul>
+<h4 id="Improper-Integrals">Improper Integrals<a class="anchor-link" href="#Improper-Integrals">&#182;</a></h4><p>For integrals where one or both limits are infinite, use any of the following methods:</p>
+<ul>
+<li>Replace infinite limits by carefully chosen finite values.</li>
+<li>Transform variable of integration so new interval is finite.</li>
+</ul>
+<h4 id="Double-Integrals">Double Integrals<a class="anchor-link" href="#Double-Integrals">&#182;</a></h4><p>For integrands over two intervals, use any of the following:</p>
+<ul>
+<li>Use a pair of quadrature routines.  Each time the outer quadrature routine is called, it in turn calls the inner quadrature routine.</li>
+</ul>
+<h4 id="Multiple-Integrals">Multiple Integrals<a class="anchor-link" href="#Multiple-Integrals">&#182;</a></h4><p>For integrands over arbitrary multiple intervals, use Monte Carlo method.</p>
+<ul>
+<li>Sample $n$ points distributed randomly overly interval.</li>
+<li>Evaluate the function at the $n$ points to obtain a mean value.</li>
+<li>Multiply the mean value by the area or volumne of the domain to obtain an estimate of the integral.</li>
+</ul>
+<p>Weakness</p>
+<ul>
+<li>Error in estimate goes to zero as $1/\sqrt{n}$ or roughly 1 decimal digit for 100-fold increase in the number of samples.</li>
+</ul>
+<p>Advantage</p>
+<ul>
+<li>Works for functions with discontinuities.</li>
+<li>Convergence rate is independent of the number of dimensions, hence effective for high dimensions.</li>
+</ul>
+<h4 id="Integral-Equations">Integral Equations<a class="anchor-link" href="#Integral-Equations">&#182;</a></h4><p>Integrand contains an unknown function, $u(t)$ to be determined:
+$$
+\int_a^b K(s, t) u(t) dt = f(s)
+$$
+where</p>
+<ul>
+<li>$K(s, t)$ is the <strong>kernel</strong> and $f(s)$ are known</li>
+</ul>
+<p>Solve by discretizing variables and replacing the integral with a quadrature rule in order to solve the system $Au = y$ for the unknown function.
+$$
+\sum_{j=1}^n w_j\, K(s_i, t_j)\, u(t_j) = f(s_i), \quad i=1,\cdots,n
+$$
+where</p>
+<ul>
+<li>$w_j K(s_i, t_j)$ is the matrix of coefficients $A$</li>
+<li>$f(s_i)$ is right hand side $y$</li>
+</ul>
+
 </div>
 </div>
 </div>

@@ -13099,7 +13099,7 @@ $$</p>
 $$
 R_n = \sum_{i=1}^n (x_{i+1} - x_i) f(\xi_i) \quad n \rightarrow \infty
 $$</p>
-<p>Condition number of integration is $b-a$ and is inherently well-conditioned.</p>
+<p>Condition number of integration is proportional to length of interval of integration, $b-a$, and is inherently well-conditioned.</p>
 <h4 id="Quadrature-Rule">Quadrature Rule<a class="anchor-link" href="#Quadrature-Rule">&#182;</a></h4><p>Weighted sum, $Q_n(f)$ of a finite number of sample values of integrand function.
 $$
 Q_n(f) = \sum_{i=1}^n w_i f(x_i)
@@ -13195,6 +13195,7 @@ $$</p>
 $$
 E(f) \approx \frac{T(f) - M(f)}{3}
 $$</li>
+<li>Halving the length of the interval, decreases the error in either rule by a factor of 1/8.</li>
 </ul>
 <p>Simpson's rule, $S(f)$, is more accurate than midpoint rule, $M(f)$.</p>
 <ul>
@@ -13206,6 +13207,9 @@ $$</li>
 <li>Due to cancellation of positive and negative errors.</li>
 </ul>
 <p>Using large number of equally spaced nodes may incur unwanted oscillations due to high degree polynomial.</p>
+<ul>
+<li>Newton-Cotes rules become arbitrarily ill-conditioned as $n \rightarrow \infty$ since $\sum_{i=1}^n |w_i| \rightarrow \infty$.</li>
+</ul>
 
 </div>
 </div>
@@ -13566,6 +13570,8 @@ $$</p>
 <span class="k">def</span> <span class="nf">quad_trapezoid_composite</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return definite integral of fx dx from [a, b] using trapezoid rule.</span>
+<span class="sd">    </span>
+<span class="sd">    k is the number of subintervals of width h=(b-a)/k.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">h</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">*</span><span class="p">(</span><span class="n">b</span><span class="o">-</span><span class="n">a</span><span class="p">)</span><span class="o">/</span><span class="n">k</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">a</span><span class="o">+</span><span class="n">h</span><span class="p">,</span> <span class="n">b</span><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
@@ -13682,6 +13688,7 @@ where</p>
 <p>Unlike integration, differentiation is inherently sensitive.</p>
 <ul>
 <li>Two functions with similar definite integrals can have very different derivatives.</li>
+<li>Round off error is significant when $h$ is small because we are subtracting two nearly identical quantities which is prone to cancellation.</li>
 </ul>
 <h4 id="Discrete-Data">Discrete Data<a class="anchor-link" href="#Discrete-Data">&#182;</a></h4><p>To compute the derivative of discrete data points, fit the data using interpolation or least squares (depending on whether the data are noisy) and compute the derivative of the fitted function at the data points.</p>
 <h4 id="Finite-Difference-Approximations">Finite Difference Approximations<a class="anchor-link" href="#Finite-Difference-Approximations">&#182;</a></h4><p>Given a smooth function $f : \mathbb{R} \rightarrow \mathbb{R}$ and step size $h$ approximate its first and second derivatives.</p>
@@ -13714,14 +13721,14 @@ $$</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Compare the error of all finite difference approximations as a function of the step size, $h$, for the function $\sin(x)$ at $x = 1$.</p>
+<p>Compare the error of all finite difference approximations of $f'(x)$ as a function of the step size, $h$, for the function $\sin(x)$ at $x = 1$.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -13817,7 +13824,234 @@ $$</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>In the context of integration or differentiation, let $F(h)$ be the value obtained for an algorithm with step size $h$.  If we compute $F(h)$ as $h \rightarrow 0$ then we can <strong>extrapolate</strong> from the known values to obtain a value for $F(0)$.</p>
+<ul>
+<li>Expect that extrapolated value has higher accuracy at $h=0$ than the values on which it is based.</li>
+</ul>
+<p>Richardson extrapolation based on a linear combination of two approximations given by:
+$$
+a_0 = F(h) + \frac{F(h) - F(h/q)}{q^{-p} - 1}
+$$
+where</p>
+<ul>
+<li>$F(h)$ and $F(h/q)$ are values computed at 2 step sizes, $h$ and $h/q$</li>
+<li>$p$ is the order of the approximating function</li>
+</ul>
+<h4 id="Romberg-Integration">Romberg Integration<a class="anchor-link" href="#Romberg-Integration">&#182;</a></h4><p>Combine composite quadrature of a Newton-Cotes rule with Richardson extrapolation to produce very high accuracy definite integrals.</p>
+<p>Technique represend by lower triangular matrix $R$.</p>
+<ul>
+<li>Values along the first column, $j=1$ represent the Newton-Cotes estimate of the integral with the number of subintervals doubled at each row of the matrix, $k = 2^{i}$.</li>
+<li>Values of elements at index $j &gt; 1$ in the same row, $r_{i,j}$ are formed from the Richardson extrapolation of the elements to the left $r_{i,j-1}$ and to the left and previous row, $r_{i-1,j-1}$.</li>
+<li>Terminate the process when the absolute value of the difference in successive rightmost values falls below some tolerance, $|r_{i,j-1} - r_{i-1,j-1}| &lt; \epsilon$
+$$
+R =
+\begin{bmatrix}
+r_{1,1} \\
+r_{2,1} &amp; r_{2,2} \\
+r_{3,1} &amp; r_{3,2} &amp; r_{3,3} \\
+\end{bmatrix}
+$$</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Use Richardson extrapolation to improve the accuracy of a first order forward difference approximation of $f'(x)$ for $\sin(x)$ at $x=1$.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="k">def</span> <span class="nf">richardson_extrapolation</span><span class="p">(</span><span class="n">dfx</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute Richardson extrapolation based on F(x,h) and F(x,(h/q)).</span>
+<span class="sd">    </span>
+<span class="sd">    dfx is an approximation of f&#39;(x) at x using step size h</span>
+<span class="sd">    q is the ratio of the step sizes</span>
+<span class="sd">    p is the order of the approximating function</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fh</span><span class="p">,</span> <span class="n">fhq</span> <span class="o">=</span> <span class="n">dfx</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">h</span><span class="p">),</span> <span class="n">dfx</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="n">h</span><span class="o">/</span><span class="n">q</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">fh</span> <span class="o">+</span> <span class="p">(</span><span class="n">fh</span> <span class="o">-</span> <span class="n">fhq</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.</span><span class="o">*</span><span class="n">p</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">forward_dfx</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">h</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute f&#39;(x) using forward difference approximation.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">fx</span><span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="n">h</span><span class="p">)</span> <span class="o">-</span> <span class="n">fx</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">/</span><span class="n">h</span>
+
+
+<span class="c1"># f(x) and f&#39;(x) are the true function and derivative at x.</span>
+<span class="n">fx</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">dfx</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="mf">1.</span>
+<span class="n">dfx1</span> <span class="o">=</span> <span class="n">dfx</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c1"># Compute the Richardson extrapolation for h, q, and p.</span>
+<span class="n">h</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">1.</span>
+<span class="c1"># First order forward difference approximation of f&#39;(x).</span>
+<span class="n">approxdfx</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="n">forward_dfx</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
+<span class="c1"># Improved approximation of f&#39;(x).</span>
+<span class="n">approxdfx1</span> <span class="o">=</span> <span class="n">richardson_extrapolation</span><span class="p">(</span><span class="n">approxdfx</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+
+<span class="c1"># Compute the relative error to the true derivative.</span>
+<span class="n">relerror</span> <span class="o">=</span> <span class="p">((</span><span class="n">dfx1</span><span class="o">-</span><span class="n">approxdfx1</span><span class="p">)</span><span class="o">/</span><span class="n">dfx1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;relerror: &quot;</span><span class="p">,</span> <span class="n">relerror</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>relerror:  -0.014360047767324245
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Use Romberg integration to compute the integral below:
+$$
+\int_0^{\pi/2} \sin(x) dx
+$$</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.integrate</span> <span class="k">as</span> <span class="nn">integrate</span>
+
+<span class="k">def</span> <span class="nf">richardson_extrapolation</span><span class="p">(</span><span class="n">fxh</span><span class="p">,</span> <span class="n">fxhq</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute Richardson extrapolation based on F(x,h) and F(x,(h/q)).</span>
+<span class="sd">    </span>
+<span class="sd">    fxh is the approximation of f(x) at x using step size h.</span>
+<span class="sd">    fxhq is the approximation of f(x) at x using step size h/q.</span>
+<span class="sd">    q is the ratio of the step sizes</span>
+<span class="sd">    p is the order of the approximating function</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">fxh</span> <span class="o">+</span> <span class="p">(</span><span class="n">fxh</span> <span class="o">-</span> <span class="n">fxhq</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.</span><span class="o">*</span><span class="n">p</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">quad_trapezoid_composite</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return definite integral of fx dx from [a, b] using trapezoid rule.</span>
+
+<span class="sd">    fx is the function to integrate. </span>
+<span class="sd">    a, b are the limits of integration.</span>
+<span class="sd">    k is the number of subintervals of width h=(b-a)/k.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">*</span><span class="p">(</span><span class="n">b</span><span class="o">-</span><span class="n">a</span><span class="p">)</span><span class="o">/</span><span class="n">k</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">a</span><span class="o">+</span><span class="n">h</span><span class="p">,</span> <span class="n">b</span><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">vfx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">fx</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">h</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.5</span><span class="o">*</span><span class="n">fx</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">vfx</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">fx</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">romberg_integration</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return definite integral of fx from [a, b] using Romberg integration.</span>
+
+<span class="sd">    fx is the function to integrate. </span>
+<span class="sd">    a, b are the limits of integration.</span>
+<span class="sd">    kmax is the maximum number of steps to use.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">k</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">2.</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">maxiter</span><span class="p">,</span> <span class="n">maxiter</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">maxiter</span><span class="p">):</span>
+        <span class="c1"># Double the number of subintervals to use for integration.</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">k</span><span class="o">*</span><span class="mi">2</span>
+        <span class="c1"># Compute the definite integral using composite trapezoid rule.</span>
+        <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">quad_trapezoid_composite</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+            <span class="c1"># Update the extrapolated values.</span>
+            <span class="n">fxh</span><span class="p">,</span> <span class="n">fxhq</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">richardson_extrapolation</span><span class="p">(</span><span class="n">fxh</span><span class="p">,</span> <span class="n">fxhq</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">R</span><span class="p">[</span><span class="n">maxiter</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">maxiter</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+
+<span class="c1"># Compute integral of f(x) from [a, b].</span>
+<span class="n">fx</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">2.</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">romberg_integration</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+<span class="c1"># Compare to result obtained from scipy.integrate.romberg.</span>
+<span class="n">expected</span> <span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">romberg</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Summary:-Numerical-Integration-and-Differentiation">Summary: Numerical Integration and Differentiation<a class="anchor-link" href="#Summary:-Numerical-Integration-and-Differentiation">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Integration">Integration<a class="anchor-link" href="#Integration">&#182;</a></h4><ul>
+<li>Integral is approximated by weighted sum of sample values.<ul>
+<li>Integration is inherently well conditioned.</li>
+</ul>
+</li>
+<li>Quadrature rules are derived by integrating polynomial interpolant.<ul>
+<li>Newton-Cotes rules such as midpoint, trapezoid, and Simpson use equally spaced nodes and choose weights to maximize polynomial degree.<ul>
+<li>If n is even, then degree is $n-1$.  Example: trapezoid.</li>
+<li>If n is odd, then degree is $n$.  Example: midpoint.</li>
+<li>Midpoint is twice as accurate as trapezoid.</li>
+</ul>
+</li>
+<li>Gaussian rules choose nodes and weights to maximize degree ($2n-1$).</li>
+</ul>
+</li>
+<li>Composite quadrature subdivides interval of integration and uses Newton-Cotes rules in each subinterval.</li>
+<li>Adaptive quadrature recursively applies composite quadrature to smaller subintervals until the difference between the rules falls below an error tolerance.</li>
+<li>Romberg integration uses Richardson extrapolation to produce very high accuracy (up to machine precision) definite integrals.</li>
+</ul>
+<h4 id="Differentiation">Differentiation<a class="anchor-link" href="#Differentiation">&#182;</a></h4><ul>
+<li>Differentiation is approximated by successive differences.<ul>
+<li>Differentiation is inherently sensitive.</li>
+<li>Round off error is significant when $h$ is small because we are subtracting two nearly identical quantities which is prone to cancellation.</li>
+</ul>
+</li>
+<li>For discrete data, best approach is to fit function to data using a piecewise interpolant such as Hermite cubic or cubic spline.<ul>
+<li>If data are noisy, then least squares is more appropriate.</li>
+</ul>
+</li>
+<li>Richardson extrapolation can be used with numerical differentiation to improve the accuracy of the results on which the extrapolation is based.</li>
+</ul>
+
 </div>
 </div>
 </div>

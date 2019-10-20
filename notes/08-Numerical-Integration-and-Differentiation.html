@@ -13172,17 +13172,17 @@ $$</p>
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Quadrature rules based on equally spaced nodes in interval $[a, b]$.</p>
 <ol>
-<li><p>Midpoint rule (n=1)
+<li><p>Midpoint rule (n=1, open)
 $$
 M(f) = (b-a)\, f \left( \frac{a+b}{2} \right)
 $$</p>
 </li>
-<li><p>Trapezoid rule (n=2)
+<li><p>Trapezoid rule (n=2, closed)
 $$
 T(f) = \frac{b-a}{2}\, \left( f(a) + f(b) \right)
 $$</p>
 </li>
-<li><p>Simpson's rule (n=3)
+<li><p>Simpson's rule (n=3, closed)
 $$
 S(f) = \frac{b-a}{6}\, \left( f(a) + 4\,f(\frac{a+b}{2}) + f(b) \right)
 $$</p>
@@ -13841,7 +13841,10 @@ where</p>
 <p>Technique represend by lower triangular matrix $R$.</p>
 <ul>
 <li>Values along the first column, $j=1$ represent the Newton-Cotes estimate of the integral with the number of subintervals doubled at each row of the matrix, $k = 2^{i}$.</li>
-<li>Values of elements at index $j &gt; 1$ in the same row, $r_{i,j}$ are formed from the Richardson extrapolation of the elements to the left $r_{i,j-1}$ and to the left and previous row, $r_{i-1,j-1}$.</li>
+<li>Values of elements at index $j &gt; 1$ in the same row, $r_{i,j}$ are formed from the extrapolation of the elements to the left $r_{i,j-1}$ and to the left and previous row, $r_{i-1,j-1}$.
+$$
+r_{i,j} = \frac{4^{j} r_{i,j-1} - r_{i-1,j-1}}{4^{j}-1}
+$$</li>
 <li>Terminate the process when the absolute value of the difference in successive rightmost values falls below some tolerance, $|r_{i,j-1} - r_{i-1,j-1}| &lt; \epsilon$
 $$
 R =
@@ -13934,7 +13937,7 @@ $$</li>
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Use Romberg integration to compute the integral below:
 $$
-\int_0^{\pi/2} \sin(x) dx
+\int_0^{\pi/2} \sin(x) dx = 1
 $$</p>
 
 </div>
@@ -13949,17 +13952,6 @@ $$</p>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scipy.integrate</span> <span class="k">as</span> <span class="nn">integrate</span>
 
-<span class="k">def</span> <span class="nf">richardson_extrapolation</span><span class="p">(</span><span class="n">fxh</span><span class="p">,</span> <span class="n">fxhq</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute Richardson extrapolation based on F(x,h) and F(x,(h/q)).</span>
-<span class="sd">    </span>
-<span class="sd">    fxh is the approximation of f(x) at x using step size h.</span>
-<span class="sd">    fxhq is the approximation of f(x) at x using step size h/q.</span>
-<span class="sd">    q is the ratio of the step sizes</span>
-<span class="sd">    p is the order of the approximating function</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">fxh</span> <span class="o">+</span> <span class="p">(</span><span class="n">fxh</span> <span class="o">-</span> <span class="n">fxhq</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.</span><span class="o">*</span><span class="n">p</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span>
-
 <span class="k">def</span> <span class="nf">quad_trapezoid_composite</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return definite integral of fx dx from [a, b] using trapezoid rule.</span>
@@ -13973,26 +13965,25 @@ $$</p>
     <span class="n">vfx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">fx</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">h</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.5</span><span class="o">*</span><span class="n">fx</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">vfx</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">fx</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
 
-<span class="k">def</span> <span class="nf">romberg_integration</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">romberg_integration</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return definite integral of fx from [a, b] using Romberg integration.</span>
 
 <span class="sd">    fx is the function to integrate. </span>
 <span class="sd">    a, b are the limits of integration.</span>
-<span class="sd">    kmax is the maximum number of steps to use.</span>
+<span class="sd">    kmax is the maximum number of subintervals where h=2^{-k}.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">k</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">2.</span>
-    <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">maxiter</span><span class="p">,</span> <span class="n">maxiter</span><span class="p">))</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">maxiter</span><span class="p">):</span>
-        <span class="c1"># Double the number of subintervals to use for integration.</span>
-        <span class="n">k</span> <span class="o">=</span> <span class="n">k</span><span class="o">*</span><span class="mi">2</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">kmax</span><span class="p">,</span> <span class="n">kmax</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">kmax</span><span class="p">):</span>
+        <span class="c1"># Double the number of subintervals at each iteration.</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mf">2.</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
         <span class="c1"># Compute the definite integral using composite trapezoid rule.</span>
-        <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">quad_trapezoid_composite</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">quad_trapezoid_composite</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
             <span class="c1"># Update the extrapolated values.</span>
-            <span class="n">fxh</span><span class="p">,</span> <span class="n">fxhq</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">richardson_extrapolation</span><span class="p">(</span><span class="n">fxh</span><span class="p">,</span> <span class="n">fxhq</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">R</span><span class="p">[</span><span class="n">maxiter</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">maxiter</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">fxh</span><span class="p">,</span> <span class="n">fxhq</span><span class="p">,</span> <span class="n">c1</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mf">4.</span><span class="p">,</span><span class="n">j</span><span class="p">)</span>
+            <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">c1</span><span class="o">*</span><span class="n">fxh</span> <span class="o">-</span> <span class="n">fxhq</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">c1</span><span class="o">-</span><span class="mf">1.</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">R</span><span class="p">[</span><span class="n">kmax</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">kmax</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
 
 <span class="c1"># Compute integral of f(x) from [a, b].</span>
@@ -14000,12 +13991,35 @@ $$</p>
 <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">2.</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">romberg_integration</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 
+<span class="c1"># Compute the relative error to the true integral.</span>
+<span class="n">Ifx</span> <span class="o">=</span> <span class="mf">1.</span>
+<span class="n">relerror</span> <span class="o">=</span> <span class="p">((</span><span class="n">Ifx</span><span class="o">-</span><span class="n">result</span><span class="p">)</span><span class="o">/</span><span class="n">Ifx</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;relerror: &quot;</span><span class="p">,</span> <span class="n">relerror</span><span class="p">)</span>
+
 <span class="c1"># Compare to result obtained from scipy.integrate.romberg.</span>
 <span class="n">expected</span> <span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">romberg</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
 </pre></div>
 
     </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>relerror:  -2.983724378680108e-11
+</pre>
+</div>
+</div>
+
 </div>
 </div>
 

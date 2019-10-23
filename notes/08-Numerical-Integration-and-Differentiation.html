@@ -13297,11 +13297,12 @@ simpson:    0.7471804289095104
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h4 id="Clenshaw-Curtis-Quadrature">Clenshaw-Curtis Quadrature<a class="anchor-link" href="#Clenshaw-Curtis-Quadrature">&#182;</a></h4><p>Quadrature rules using Chebyshev points.</p>
+<h4 id="Clenshaw-Curtis-Quadrature">Clenshaw-Curtis Quadrature<a class="anchor-link" href="#Clenshaw-Curtis-Quadrature">&#182;</a></h4><p>Quadrature rules using nodes placed at Chebyshev points.</p>
 <ul>
 <li>Weights are always positive.</li>
 <li>Approximate integral always converges to exact integral as $n \rightarrow \infty$</li>
 <li>Implemented using FFT (discussed later in course)</li>
+<li>More accurate than Newton-Cotes: Chebyshev points distribute the error more evenly, especially at the extrema.</li>
 </ul>
 <h4 id="Gaussian-Quadrature">Gaussian Quadrature<a class="anchor-link" href="#Gaussian-Quadrature">&#182;</a></h4><p>Nodes and weights are chosen to maximize degree.</p>
 <ul>
@@ -13314,6 +13315,7 @@ simpson:    0.7471804289095104
 </ul>
 </li>
 <li>An n-point Gaussian quadrature rule is of degree $2n - 1$.</li>
+<li>Highest possible accuracy for the number of nodes used.</li>
 </ul>
 <h4 id="Change-of-Variable">Change of Variable<a class="anchor-link" href="#Change-of-Variable">&#182;</a></h4><p>Gaussian quadrature rules for the integrand $I(g)$ and computed for an interval $x$ given by $[\alpha, \beta]$ can be transformed to another interval $[a, b]$.
 $$

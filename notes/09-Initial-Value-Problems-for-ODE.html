@@ -13192,6 +13192,132 @@ $$</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>Use scipy to solve the second order ODE given by the following problem.</p>
+<p>A spacecraft is launched from an altitude h0 = 772km with initial speed v0 = 6700m/s.  The ODE describing the motion is:
+$$
+r'' = r (\theta')^2 - \frac{GM_e}{r^2} \\
+\theta'' = - \frac{2 r' \theta'}{r}
+$$
+where</p>
+<ul>
+<li>$r$ and $\theta$ are the polar coordinates of the spacecraft</li>
+</ul>
+<p>Integrate the ODE from time of launch until the spacecraft hits the Earth.  Determine the value of $\theta$ at the impact site.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.integrate</span> <span class="k">as</span> <span class="nn">integrate</span>
+
+<span class="c1"># Define some constants.</span>
+<span class="n">G</span> <span class="o">=</span> <span class="mf">6.672e-11</span>
+<span class="n">Me</span> <span class="o">=</span> <span class="mf">5.9742e24</span>
+<span class="n">Re</span> <span class="o">=</span> <span class="mf">6378.14e3</span>  <span class="c1"># Convert to m.</span>
+
+<span class="k">def</span> <span class="nf">fty</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Evaluate the n differential equations y^{(i)}(t) at t for i=1..n.</span>
+<span class="sd">    </span>
+<span class="sd">    y is an input vector with the following components</span>
+<span class="sd">        y_0 = r</span>
+<span class="sd">        y_1 = r&#39;</span>
+<span class="sd">        y_2 = \theta</span>
+<span class="sd">        y_3 = \theta&#39;</span>
+
+<span class="sd">    Returns a vector of derivatives for each component of y.</span>
+<span class="sd">        y_0&#39; = r&#39;</span>
+<span class="sd">        y_1&#39; = r&#39;&#39;</span>
+<span class="sd">        y_2&#39; = \theta&#39;</span>
+<span class="sd">        y_3&#39; = \theta&#39;&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ftyk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">ftyk</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">ftyk</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">y</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">*</span><span class="n">y</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">G</span><span class="o">*</span><span class="n">Me</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">ftyk</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">ftyk</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.</span><span class="o">*</span><span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">y</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="o">/</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">ftyk</span>
+
+
+<span class="c1"># Setup the initial conditions.</span>
+<span class="n">h0</span><span class="p">,</span> <span class="n">v0</span> <span class="o">=</span> <span class="mf">772e3</span><span class="p">,</span> <span class="mf">6700.</span>
+<span class="n">y0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">Re</span><span class="o">+</span><span class="n">h0</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">v0</span><span class="o">/</span><span class="p">(</span><span class="n">Re</span><span class="o">+</span><span class="n">h0</span><span class="p">)])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;y0:&quot;</span><span class="p">,</span> <span class="n">y0</span><span class="p">)</span>
+
+<span class="c1"># Integrate from [0s, 20min] report y every 100s.</span>
+<span class="n">t0</span><span class="p">,</span> <span class="n">tf</span><span class="p">,</span> <span class="n">nsteps</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1200.</span><span class="p">,</span> <span class="mf">1200.</span><span class="o">/</span><span class="mf">100.</span>
+<span class="n">t_eval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">t0</span><span class="p">,</span> <span class="n">tf</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">solve_ivp</span><span class="p">(</span><span class="n">fty</span><span class="p">,</span> <span class="p">(</span><span class="n">t0</span><span class="p">,</span> <span class="n">tf</span><span class="p">),</span> <span class="n">y0</span><span class="p">,</span> <span class="n">t_eval</span><span class="o">=</span><span class="n">t_eval</span><span class="p">,</span> 
+                             <span class="n">method</span><span class="o">=</span><span class="s1">&#39;RK45&#39;</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_equal</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Print a table of time and altitude.</span>
+<span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]):</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;impact&#39;</span> <span class="k">if</span> <span class="n">r</span> <span class="o">&lt;</span> <span class="n">Re</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;t=</span><span class="si">%4.0f</span><span class="s1"> (s) r=</span><span class="si">%g</span><span class="s1"> (m) </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+
+<span class="c1"># Find the index of the first time below Re.</span>
+<span class="n">inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span> <span class="o">&lt;=</span> <span class="n">Re</span><span class="p">)</span>
+
+<span class="c1"># Compute time of impact by solving r + r&#39;dt = Re for dt.</span>
+<span class="n">r</span><span class="p">,</span> <span class="n">dr</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">inds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">result</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">inds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">Re</span> <span class="o">-</span> <span class="n">r</span><span class="p">)</span><span class="o">/</span><span class="n">dr</span>
+<span class="n">t_impact</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="n">inds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">dt</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;t_impact:     &quot;</span><span class="p">,</span> <span class="n">t_impact</span><span class="p">,</span> <span class="s2">&quot; (s)&quot;</span><span class="p">)</span>
+
+<span class="c1"># Compute theta at impact theta + theta&#39;dt.</span>
+<span class="n">theta</span><span class="p">,</span> <span class="n">dtheta</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="n">inds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">result</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="n">inds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">theta_impact</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">+</span> <span class="n">dtheta</span><span class="o">*</span><span class="n">dt</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;theta_impact: &quot;</span><span class="p">,</span> <span class="n">theta_impact</span><span class="p">,</span> <span class="s2">&quot; (rad)&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>y0: [7.15014000e+06 0.00000000e+00 0.00000000e+00 9.37044589e-04]
+t=   0 (s) r=7.15014e+06 (m) 
+t= 100 (s) r=7.14255e+06 (m) 
+t= 200 (s) r=7.11981e+06 (m) 
+t= 300 (s) r=7.08201e+06 (m) 
+t= 400 (s) r=7.02935e+06 (m) 
+t= 500 (s) r=6.96213e+06 (m) 
+t= 600 (s) r=6.88072e+06 (m) 
+t= 700 (s) r=6.78561e+06 (m) 
+t= 800 (s) r=6.67737e+06 (m) 
+t= 900 (s) r=6.55683e+06 (m) 
+t=1000 (s) r=6.42499e+06 (m) 
+t=1100 (s) r=6.28313e+06 (m) impact
+t=1200 (s) r=6.13287e+06 (m) impact
+t_impact:      1034.1772163714961  (s)
+theta_impact:  1.047938964525584  (rad)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="09.02-Stability-of-ODE-Solutions">09.02 Stability of ODE Solutions<a class="anchor-link" href="#09.02-Stability-of-ODE-Solutions">&#182;</a></h2>
 </div>
 </div>
@@ -13268,7 +13394,7 @@ where</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -13330,7 +13456,7 @@ where</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -13392,7 +13518,7 @@ where</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -13516,7 +13642,7 @@ $$</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
@@ -13614,7 +13740,7 @@ $$</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
@@ -13763,7 +13889,7 @@ $$</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
@@ -13943,13 +14069,12 @@ $$</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">scipy.optimize</span> <span class="k">as</span> <span class="nn">optimize</span>
 
 <span class="o">%</span><span class="k">matplotlib</span> inline
 
@@ -14050,13 +14175,12 @@ $$</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">scipy.optimize</span> <span class="k">as</span> <span class="nn">optimize</span>
 
 <span class="o">%</span><span class="k">matplotlib</span> inline
 

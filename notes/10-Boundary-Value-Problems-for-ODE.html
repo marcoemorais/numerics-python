@@ -13104,7 +13104,7 @@ $$</p>
 $$
 g(y(a), y(b)) = 0
 $$</p>
-<h4 id="Boundary-Conditions">Boundary Conditions<a class="anchor-link" href="#Boundary-Conditions">&#182;</a></h4><p><strong>Separated</strong> (def): $g$ contains solution values at $a$ or $b$, but not both.</p>
+<h4 id="Boundary-Conditions">Boundary Conditions<a class="anchor-link" href="#Boundary-Conditions">&#182;</a></h4><p><strong>Separated</strong> (def): $g$ contains solution values only at $a$ or $b$, but not both.</p>
 <p><strong>Linear</strong> (def): form sum of matrix-vector products
 $$
 B_a y(a) + B_b y(b) = c
@@ -13626,7 +13626,10 @@ $$</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h4 id="Collocation-Method">Collocation Method<a class="anchor-link" href="#Collocation-Method">&#182;</a></h4><p>Approximate solution to BVP by finite linear combinations of basis functions.</p>
+<h4 id="Collocation-Method">Collocation Method<a class="anchor-link" href="#Collocation-Method">&#182;</a></h4><p>Approximate solution to ODE by linear combinations of basis functions.</p>
+<ul>
+<li>Requires solution to satisfy ODE at discrete set of collocation points.</li>
+</ul>
 <p>Given $u'' = f(t, u, u')$ and $a &lt; t &lt; b$ with BC $u(a) = \alpha$ and $u(b) = \beta$, seek a solution of the form:
 $$
 u(t) \approx v(t, x) = \sum_{i=1}^n x_i \phi_i(t)
@@ -13690,10 +13693,11 @@ $$</li>
     <span class="n">n</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">size</span>
     <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vander</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">increasing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="c1"># Roll coefficients of Vandermonde according to order.</span>
-    <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">,:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span>  <span class="c1"># Vanishing terms of the derivative.</span>
+    <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">order</span><span class="p">)</span>
+    <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">,:</span><span class="n">order</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span>  <span class="c1"># Vanishing terms of the derivative.</span>
     <span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">,:],</span> <span class="n">vdt</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">A</span>
+
 
 <span class="k">def</span> <span class="nf">residual</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">ua</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -13713,6 +13717,7 @@ $$</li>
     <span class="c1"># Residual at last collocation point is BC.</span>
     <span class="n">b</span><span class="p">[</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">ub</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">b</span>
+
 
 <span class="k">def</span> <span class="nf">utx</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -13805,6 +13810,7 @@ $$</li>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Galerkin-Method">Galerkin Method<a class="anchor-link" href="#Galerkin-Method">&#182;</a></h4><p>Rather than forcing residual to be zero at collocation points, minimize the residual over the entire interval of integration eg via least squares.</p>
 
 </div>
 </div>
@@ -13819,6 +13825,19 @@ $$</li>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>Standard eigenvalue problem for second-order ODE
+$$
+u'' = \lambda f(t, u, u'), \qquad a &lt; t &lt; b
+$$</p>
+<p>with boundary conditions
+$$
+u(a) = \alpha, \qquad u(b) = \beta
+$$</p>
+<p>where</p>
+<ul>
+<li>$\lambda$ is the <strong>eigenvalue</strong> of this two-point BVP</li>
+<li>$u$ is the <strong>eigenfunction</strong></li>
+</ul>
 
 </div>
 </div>
@@ -13833,9 +13852,29 @@ $$</li>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li>Two-point BVP for ODE specifies BC at both endpoints of interval.</li>
+<li>Shooting method replaces the BVP by a sequence of IVP formed by guessing values of $u'(a)$ until the second boundary condition $u(b)$ is satisfied.</li>
+<li>Finite difference method replaces the derivatives in the ODE by finite differences on a mesh of points.</li>
+<li>Collocation method approximates the solution to the ODE by linear combinations of basis functions.</li>
+<li>Galerkin method approximates the solution to the ODE by minimizing the residual over the entire interval of integration.</li>
+</ul>
 
 </div>
 </div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
 </div>
     </div>
   </div>

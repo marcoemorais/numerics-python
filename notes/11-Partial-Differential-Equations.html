@@ -13188,6 +13188,25 @@ $$</p>
 $$
 y_i'(t) = \frac{c}{(\Delta x)^2} \left( y_{i+1}(t) - 2y_i(t) + y_{i-1}(t) \right), \qquad i=1, \cdots, n
 $$</li>
+<li>Solve the system of ODEs is represented by the tridiagonal matrix below with $\alpha = \frac{c}{(\Delta x)^2}$:
+$$
+y' =
+\alpha 
+\begin{bmatrix}
+-2 &amp; 1 &amp; 0 &amp; &amp; \\
+1 &amp; -2 &amp; 1 &amp; &amp; \\
+&amp; \ddots &amp; \ddots &amp; \ddots &amp; \\
+&amp; &amp; 1 &amp; -2 &amp; 1 \\
+&amp; &amp; 0 &amp; 1 &amp; -2 \\
+\end{bmatrix}
+\begin{bmatrix}
+y_1 \\
+y_2 \\
+\vdots \\
+y_{n-1} \\
+y_n \\
+\end{bmatrix}
+$$</li>
 </ol>
 <p>System of ODEs is very stiff as the mesh size $\Delta x$ becomes small.</p>
 <ul>
@@ -13230,7 +13249,7 @@ $$
 u(t, x=0) = 0, \qquad u(t, 1) = 0, \qquad t \geq 0
 $$</p>
 <p><strong>Note</strong>: Let $u_i^k$ denote the approximate solution at $(t_k, x_i)$.</p>
-<h5 id="Fully-Discrete-Finite-Difference-Method">Fully Discrete Finite Difference Method<a class="anchor-link" href="#Fully-Discrete-Finite-Difference-Method">&#182;</a></h5><ol>
+<h5 id="Explicit-Finite-Difference-Method">Explicit Finite Difference Method<a class="anchor-link" href="#Explicit-Finite-Difference-Method">&#182;</a></h5><ol>
 <li>Define mesh points.<ul>
 <li>Spatial mesh points $x_i = i \Delta x$ and $i =0, \cdots, n+1$ where $\Delta x = 1/(n+1)$.</li>
 <li>Temporal mesh points $t_k = k \Delta t$ for suitably chosen $\Delta t$.</li>
@@ -13259,7 +13278,7 @@ $$</p>
 $$
 u(t, x=0) = \alpha, \qquad u(t, x=1) = \beta
 $$</p>
-<h5 id="Fully-Discrete-Finite-Difference-Method">Fully Discrete Finite Difference Method<a class="anchor-link" href="#Fully-Discrete-Finite-Difference-Method">&#182;</a></h5><p>Replace $u_{tt}$ and $u_{xx}$ by centered difference of second derivative in space and time.
+<h5 id="Explicit-Finite-Difference-Method">Explicit Finite Difference Method<a class="anchor-link" href="#Explicit-Finite-Difference-Method">&#182;</a></h5><p>Replace $u_{tt}$ and $u_{xx}$ by centered difference of second derivative in space and time.
 $$
 \frac{u_{i}^{k+1} - 2u_i^k + u_{i}^{k-1}}{(\Delta t)^2} = c \frac{u_{i+1}^k - 2u_i^k + u_{i-1}^k}{(\Delta x)^2}
 $$</p>
@@ -13271,6 +13290,10 @@ $$</p>
 <li>Second order accurate in space</li>
 </ul>
 <h4 id="Implicit-Methods">Implicit Methods<a class="anchor-link" href="#Implicit-Methods">&#182;</a></h4><p>Implicit methods such as backward Euler (first-order accurate) or trapezoid (second-order accurate) have larger stability region.</p>
+<ul>
+<li>Larger stability region =&gt; larger step size.</li>
+<li>Amount of work per step is larger to solve system of equations.</li>
+</ul>
 <p>Heat Equation, backward Euler
 $$
 u_i^{k+1} = u_i^k + c \frac{\Delta t}{(\Delta x)^2} \left( u_{i+1}^{k+1} -2 u_i^{k+1} + u_{i-1}^{k+1} \right)
@@ -13296,11 +13319,32 @@ $$</p>
 <p>Properties Required for Convergence</p>
 <ol>
 <li>Consistency<ul>
-<li>Local truncation error goes to zero</li>
+<li>Local truncation error goes to zero.</li>
+<li>Can be verified using Taylor series expansion.</li>
 </ul>
 </li>
 <li>Stability<ul>
-<li>Approximate solution at any time $t$ as $t \rightarrow 0$ is bounded</li>
+<li>Approximate solution at any time $t$ as $t \rightarrow 0$ is bounded.</li>
+</ul>
+</li>
+</ol>
+<p>Lax Equivalence Theorem</p>
+<ul>
+<li>Well-posed linear PDE: consistency <strong>and</strong> stability necessary and sufficient for convergence.</li>
+</ul>
+<p>Stability: Methods</p>
+<ol>
+<li>Matrix method<ul>
+<li>Based on eigenvalues of matrix representation of difference equations.</li>
+</ul>
+</li>
+<li>Fourier method<ul>
+<li>Substitute complex exponential representation of solution error into difference equations and analyze.</li>
+</ul>
+</li>
+<li>Domains of dependence (DoD)<ul>
+<li>Compare difference scheme to PDE.</li>
+<li>CFL Condition: For each mesh point, DoD of PDE must lie within DoD of difference scheme.</li>
 </ul>
 </li>
 </ol>
@@ -13318,6 +13362,90 @@ $$</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Example:-Elliptic-PDE">Example: Elliptic PDE<a class="anchor-link" href="#Example:-Elliptic-PDE">&#182;</a></h4><p>Canonical time-independent elliptic PDE is <strong>Helmholtz equation</strong>.
+$$
+\frac{\partial^2 u}{\partial x^2} + \frac{\partial^2 u}{\partial y^2} + \lambda u = f(x, y)
+$$</p>
+<p>Expressed in more concise syntax as:
+$$
+u_{xx} + u_{yy} + \lambda u = f(x,y)
+$$</p>
+<p>Special cases.</p>
+<ol>
+<li><strong>Poisson equation</strong>: $\lambda = 0$.</li>
+<li><strong>Laplace Equation</strong>: $\lambda = 0$ and $f = 0$.</li>
+</ol>
+<p>Boundary conditions.</p>
+<ol>
+<li><strong>Dirichlet</strong>: $u$ is specified.</li>
+<li><strong>Neumann</strong>: $u_x$ or $u_y$ is specified.</li>
+<li><strong>Mixed</strong>: combinations of these are specified.</li>
+</ol>
+<p>Finite difference methods similar to time-dependent PDEs.</p>
+<ul>
+<li>Instead of propagating solution forward in time from initial conditions, obtain an approximate solution at all mesh points simultaneously by solving single system of algebraic equations. </li>
+</ul>
+<p><strong>Note</strong>: Let $u_{i,j}$ denote the approximate solution at $u(x_i, y_i)$.</p>
+<ol>
+<li>Define mesh points.<ul>
+<li>Spatial mesh points $(x_i, y_j) = (ih, jh)$ and $i,j =1, \cdots, n$ where $h = 1/(n+1)$.</li>
+</ul>
+</li>
+<li>Replace $u_{xx}$ and $u_{yy}$ by centered difference of second derivative in space.
+$$
+\frac{u_{i+1,j} - 2u_{i,j} + u_{i-1,j}}{h^2} + \frac{u_{i,j+1} - 2u_{i,j} + u_{i,j-1}}{h^2} = 0
+$$</li>
+<li>Using a <code>+</code>-shaped stencil of 4 points surrounding the central point $u_{1,1}$ we have the equation shown below.
+$$
+4 u_{1,1} - u_{0,1} - u_{2,1} - u_{1,0} - u_{1,2} = 0
+$$</li>
+<li>Repeat the stencil from the previous step to form the system of equations.<ul>
+<li>Each equation involves 5 variables and resulting matrix is sparse.</li>
+</ul>
+</li>
+</ol>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Summary:-Partial-Differential-Equations">Summary: Partial Differential Equations<a class="anchor-link" href="#Summary:-Partial-Differential-Equations">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li>Second-order PDE are classified according to the value of discriminant and whether they are time-dependent.<ul>
+<li>Elliptic time-independent equations.<ul>
+<li>Laplace: $u_{xx} + u_{yy} = 0$</li>
+</ul>
+</li>
+<li>Parabolic time-dependent equations.<ul>
+<li>Heat: $u_t = cu_{xx}$</li>
+</ul>
+</li>
+<li>Hyperbolic time-dependent equations.<ul>
+<li>Wave: $u_{tt} = cu_{xx}$</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Semidiscrete methods for time-dependent PDE discretize in space, but leave time continuous.<ul>
+<li>Method of Lines: Approximate the solution to the PDE at $u(t_k, x_i)$ by solving the initial value problem at each of the $n$ spatial mesh points $x_i$ using finite differences.</li>
+<li>The system of ODEs is represented by a tridiagonal matrix and although computationally efficient, these are generally very stiff.</li>
+</ul>
+</li>
+<li>Fully discrete methods for time-dependent PDE discretize in space and time.<ul>
+<li>Explicit finite difference methods propagate the initial conditions forward in time.</li>
+<li>Implicit finite difference methods have a larger stability region than explicit methods and support larger step sizes.</li>
+</ul>
+</li>
+<li>Finite difference methods for time-independent PDE obtain an approximate solution at all mesh points simultaneously by solving large sparse systems of algebraic equations.</li>
+</ul>
 
 </div>
 </div>

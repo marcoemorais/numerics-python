@@ -13419,7 +13419,7 @@ $$</li>
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <ul>
-<li>Second-order PDE are classified according to the value of discriminant and whether they are time-dependent.<ul>
+<li>Second-order PDE are classified according to the value of discriminant and whether they are time-dependent.<ol>
 <li>Elliptic time-independent equations.<ul>
 <li>Laplace: $u_{xx} + u_{yy} = 0$</li>
 </ul>
@@ -13432,7 +13432,7 @@ $$</li>
 <li>Wave: $u_{tt} = cu_{xx}$</li>
 </ul>
 </li>
-</ul>
+</ol>
 </li>
 <li>Semidiscrete methods for time-dependent PDE discretize in space, but leave time continuous.<ul>
 <li>Method of Lines: Approximate the solution to the PDE at $u(t_k, x_i)$ by solving the initial value problem at each of the $n$ spatial mesh points $x_i$ using finite differences.</li>
@@ -13460,6 +13460,21 @@ $$</li>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>Sparse linear systems require data structures that only store nonzero entries along with indices of those entries in the matrix.</p>
+<p>Factorization methods on sparse systems require the introduction of new nonzero entries, referred to as <strong>fill</strong>.</p>
+<ul>
+<li>Sparse factorization methods can reorder rows and columns to limit the amount of fill introduced.</li>
+</ul>
+<h4 id="Minimum-Degree-Ordering">Minimum Degree Ordering<a class="anchor-link" href="#Minimum-Degree-Ordering">&#182;</a></h4><p>Heuristic: Limit fill by first eliminating nodes with fewest neighbors.</p>
+<h4 id="Nested-Disection-Ordering">Nested Disection Ordering<a class="anchor-link" href="#Nested-Disection-Ordering">&#182;</a></h4><p>Recursively select and number nodes which split the graph into 2 pieces of roughly equal size.</p>
+<ul>
+<li>No node in either piece is connected to a node in the other, hence no fill due to elimination of any node in the other.</li>
+</ul>
+<h4 id="Fast-Direct-Methods">Fast Direct Methods<a class="anchor-link" href="#Fast-Direct-Methods">&#182;</a></h4><ol>
+<li>FFT can be used to compute solution to certain kinds of elliptic BVP in $O(n \log n)$ work.</li>
+<li>Cyclic reduction is divide and conquer technique in which the even numbered equationas are solved in terms of odd numbered.</li>
+<li>FACR method combines Fourier analysis and cyclic reduction to produce even faster $O(n \log n \log n)$ method.</li>
+</ol>
 
 </div>
 </div>
@@ -13474,6 +13489,19 @@ $$</li>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>Iterative methods begin with initial guess for solution and continue until some termination criteria (example: $||b - Ax||$) is as small as desired.</p>
+<p>Choose $G$ and $c$ such that $Gx + c$ is a solution to $Ax = b$.
+$$
+x_{k+1} = G x_k + c
+$$</p>
+<p>Method called <strong>stationary</strong> since $G$ and $c$ are fixed over all iterations.</p>
+<p>Example Methods</p>
+<ol>
+<li>Splitting</li>
+<li>Jacobi</li>
+<li>Gauss-Seidel</li>
+<li>Successive Over-Relaxation (SOR)</li>
+</ol>
 
 </div>
 </div>
@@ -13488,6 +13516,12 @@ $$</li>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>If $A$ is symmetric positive definite, then $\phi(x) = \frac{1}{2} x^T A x - x^T b$ attains a minimum when $Ax = b$.</p>
+<p>For optimization, use negative gradient as the residual vector $r$.
+$$
+r = - \nabla \phi(x) = b - Ax
+$$</p>
+<p>This approach only requires a routine for computing $Ax$, hence attractive for solving large sparse linear systems.</p>
 
 </div>
 </div>
@@ -13502,6 +13536,12 @@ $$</li>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>Convergence rates: Jacobi &lt; Gauss-Seidel &lt; SOR &lt; CG</p>
+<ul>
+<li>Jacobi and Gauss-Seidel are impractical for large problems.</li>
+<li>Convergence of SOR depends on hyperparameter $\omega$ which can be hard to determine.</li>
+<li>Convergence rate of CG method can be furthered improved with <strong>preconditioners</strong>.</li>
+</ul>
 
 </div>
 </div>
@@ -13530,9 +13570,81 @@ $$</li>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Direct-vs.-Iterative">Direct vs. Iterative<a class="anchor-link" href="#Direct-vs.-Iterative">&#182;</a></h4><ol>
+<li>Direct Methods<ul>
+<li>Require no initial estimate.</li>
+<li>Produce high accuracy.</li>
+<li>Robust.</li>
+</ul>
+</li>
+<li>Iterative Methods<ul>
+<li>May require special properties eg CG =&gt; symmetric positive definite.</li>
+<li>May have poor rates of convergence eg Jacobi and Gauss-Seidel.</li>
+<li>More efficient if high accuracy not needed.</li>
+<li>Do not require explicit storage of matrix entries.</li>
+</ul>
+</li>
+</ol>
+<h4 id="Work-Required">Work Required<a class="anchor-link" href="#Work-Required">&#182;</a></h4><p>Computational cost of solving elliptic BVP in order of decreasing amount of work required.</p>
+<ul>
+<li>Methods requiring less work also have less generality.</li>
+</ul>
+<table>
+<thead><tr>
+<th>Method</th>
+<th>2D</th>
+<th>3D</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dense Cholesky</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Band Cholesky</td>
+<td>2</td>
+<td>2.33</td>
+</tr>
+<tr>
+<td>Sparse Cholesky</td>
+<td>1.5</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Conjugate Gradient</td>
+<td>1.5</td>
+<td>1.33</td>
+</tr>
+<tr>
+<td>Preconditioned CG</td>
+<td>1.25</td>
+<td>1.17</td>
+</tr>
+<tr>
+<td>Multigrid</td>
+<td>1</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
 
 </div>
 </div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
 </div>
     </div>
   </div>

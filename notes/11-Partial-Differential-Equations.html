@@ -13324,7 +13324,7 @@ $$</p>
 </ul>
 </li>
 <li>Stability<ul>
-<li>Approximate solution at any time $t$ as $t \rightarrow 0$ is bounded.</li>
+<li>Approximate solution at any time $t$ as $\Delta t \rightarrow 0$ is bounded.</li>
 </ul>
 </li>
 </ol>
@@ -13497,9 +13497,29 @@ $$</p>
 <p>Method called <strong>stationary</strong> since $G$ and $c$ are fixed over all iterations.</p>
 <p>Example Methods</p>
 <ol>
-<li>Splitting</li>
-<li>Jacobi</li>
-<li>Gauss-Seidel</li>
+<li>Splitting<ul>
+<li>Rewrite $A$ as $A = M - N$.</li>
+<li>Iteration scheme: $x_{k+1} = M^{-1} N x_k + M^{-1} b$</li>
+</ul>
+</li>
+<li>Jacobi<ul>
+<li>For the Jacobi method, the splitting of $A$ is given by:<ul>
+<li>$M = D$ where $D$ is formed from the diagonals of $A$.</li>
+<li>$N = -(L + U)$ where $L$ and $U$ contain the lower and upper triangular of $A$.</li>
+</ul>
+</li>
+<li>Iteration scheme: $x_{k+1} = D^{-1}(b - (L + U)x_k)$</li>
+</ul>
+</li>
+<li>Gauss-Seidel<ul>
+<li>For the Gauss-Seidel method, the splitting of $A$ is given by:<ul>
+<li>$M = D + L$</li>
+<li>$N = -U$</li>
+</ul>
+</li>
+<li>Iteration scheme: $x_{k+1} = (D + L)^{-1}(b - Ux_k)$</li>
+</ul>
+</li>
 <li>Successive Over-Relaxation (SOR)</li>
 </ol>
 
@@ -13522,6 +13542,10 @@ $$
 r = - \nabla \phi(x) = b - Ax
 $$</p>
 <p>This approach only requires a routine for computing $Ax$, hence attractive for solving large sparse linear systems.</p>
+<p>When CG is used as a direct method, the rounding error causes a loss of orthogonality.</p>
+<ul>
+<li>As a result, CG is usually used in an iterative manner and halted when the residual is sufficiently small.</li>
+</ul>
 
 </div>
 </div>
@@ -13542,6 +13566,11 @@ $$</p>
 <li>Convergence of SOR depends on hyperparameter $\omega$ which can be hard to determine.</li>
 <li>Convergence rate of CG method can be furthered improved with <strong>preconditioners</strong>.</li>
 </ul>
+<p><strong>Smoothers</strong>: Stationary iterative methods exhibit asymptotic convergence.</p>
+<ul>
+<li>Make rapid initial progress to remove high-frequency error.</li>
+<li>Make slow progress to remove low-frequency error.</li>
+</ul>
 
 </div>
 </div>
@@ -13556,6 +13585,24 @@ $$</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>Multigrid methods vary the spacing of the mesh to adjust the convergence rate of the method.</p>
+<ul>
+<li>Restriction or Injection: Transition from finer to coarser grid.</li>
+<li>Interpolation or Prolongation: Transition from coarser to finer grid.</li>
+</ul>
+<h4 id="Two-Grid-Algorithm">Two-Grid Algorithm<a class="anchor-link" href="#Two-Grid-Algorithm">&#182;</a></h4><ol>
+<li>On fine grid use smoother to compute approximate solution $\hat{x}$ for system $Ax = b$.</li>
+<li>Compute residual $r = b - A\hat{x}$.</li>
+<li>On coarse grid use smoother on residual equation to obtain approximation of error $\hat{e}$.</li>
+<li>Interpolate coarse grid correction to fine grid to obtain improved approximate solution.</li>
+</ol>
+<p>This approach can be generalized to multi-grids described by <strong>cycling strategy</strong>.</p>
+<ul>
+<li>V-cycle</li>
+<li>W-cycle</li>
+<li>Full-multigrid</li>
+</ul>
+<p>Multigrid methods are the state-of-art for solving large sparse linear systems that arise from PDE.</p>
 
 </div>
 </div>
@@ -13587,6 +13634,7 @@ $$</p>
 </ol>
 <h4 id="Work-Required">Work Required<a class="anchor-link" href="#Work-Required">&#182;</a></h4><p>Computational cost of solving elliptic BVP in order of decreasing amount of work required.</p>
 <ul>
+<li>Methods described in terms of the exponent of $n$ eg $O(n^k)$.</li>
 <li>Methods requiring less work also have less generality.</li>
 </ul>
 <table>

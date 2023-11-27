@@ -2,28 +2,9 @@
 
 Jupyter notebooks with notes and examples implemented in numpy and scipy of the algorithm pseudocode from the textbook _Scientific Computing_ by Michael Heath (Heath, 2018).
 
-<table>
-<tr>
-<td>
-![Steepest Descent Method, 6.5 Unconstrainted Optimization](figures/06-Optimization-steepest-descent.png)
-<br />6.5 Optimization, Unconstrainted Optimization
-</td>
-<td>
-![Taylor Polynomials of Increasing Degree, 7.5 Convergence](figures/07-Interpolation-Taylor-polynomials.png)
-<br />7.5 Interpolation, Convergence
-</td>
-</tr>
-<tr>
-<td>
-![Solution to Second Order ODE, 9.7 Single Step Methods](figures/09-IVP-ODE-solution-to-2nd-order-ODE.png)
-<br />9.7 Initial Value Problems, Single Step Methods
-</td>
-<td>
-![Removing High Frequency Noise, 12.3 Applications of the DFT](figures/12-Fast-Fourier-Transform-removing-high-frequency-noise.png)
-<br />12.3 Fast Fourier Transform, Applications of the DFT
-</td>
-</tr>
-</table>
+![Steepest Descent Method, 6.5 Unconstrainted Optimization](figures/06-Optimization-steepest-descent.png) ![Taylor Polynomials of Increasing Degree, 7.5 Convergence](figures/07-Interpolation-Taylor-polynomials.png)
+
+![Solution to Second Order ODE, 9.7 Single Step Methods](figures/09-IVP-ODE-solution-to-2nd-order-ODE.png) ![Removing High Frequency Noise, 12.3 Applications of the DFT](figures/12-Fast-Fourier-Transform-removing-high-frequency-noise.png)
 
 I compiled these notebooks while taking [CS 450 Numerical Analysis](https://cs.illinois.edu/academics/courses/cs450) at UIUC and they come without any guarantee of accuracy or endorsement by the textbook author. I started a similar repository with end of chapter review questions at [marcoemorais/numerics-review](https://github.com/marcoemorais/numerics-review).
 
